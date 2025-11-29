@@ -7,7 +7,7 @@ import retrofit2.Response;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Arrays;
+
 import java.util.Collections;
 
 @Service
@@ -26,7 +26,7 @@ public class PlaidService {
         LinkTokenCreateRequest request = new LinkTokenCreateRequest()
                 .user(user)
                 .clientName("Morzio")
-                .products(Arrays.asList(Products.TRANSACTIONS, Products.PAYMENT_INITIATION))
+                .products(Collections.singletonList(Products.TRANSACTIONS))
                 .countryCodes(Collections.singletonList(CountryCode.GB))
                 .language("en");
 
