@@ -2,6 +2,7 @@ package com.morzio.server.entities;
 
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -17,10 +18,11 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Installment {
+    @Id
     private Long id;
     
     private Long amount;
-    
+
     private String status;
     
     @ManyToOne
