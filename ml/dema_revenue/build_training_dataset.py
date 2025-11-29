@@ -30,36 +30,16 @@ def load_legit_tx_ids(labels_path: Path) -> set[int]:
     return {int(k) for k, v in target.items() if str(v).lower() == "no"}
 
 
-def find_snapshot_date(tx_path: Path, legit_ids: set[int], chunksize: int) -> pd.Timestamp:
-    """Find the max transaction date among legitimate transactions."""
-    cols = ["id", "date"]
-    dtypes = {"id": "int64", "date": "string"}
-    max_date: Optional[pd.Timestamp] = None
-    for chunk in pd.read_csv(tx_path, usecols=cols, dtype=dtypes, chunksize=chunksize):
-        chunk = chunk[chunk["id"].isin(legit_ids)]
-        if chunk.empty:
-            continue
-        dates = pd.to_datetime(chunk["date"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
-        if dates.empty:
-            continue
-        chunk_max = dates.max()
-        if pd.isna(chunk_max):
-            continue
-        if max_date is None or chunk_max > max_date:
-            max_date = chunk_max
-    if max_date is None:
-        raise ValueError("No legitimate transactions found to determine snapshot date.")
-    return max_date
-
-
 def aggregate_client_expenses(
     tx_path: Path,
     legit_ids: set[int],
-    snapshot_date: pd.Timestamp,
-    client_ids: set[int],
     chunksize: int,
-) -> Dict[int, Dict[str, any]]:
-    """Stream transactions and collect per-client expense/inflow metrics."""
+    client_ids: set[int],
+) -> Dict[int, Dict[str, list]]:
+    """
+    Stream legitimate transactions and collect full time series per client.
+    Returns a dict mapping client_id -> {"dates": [...], "amounts": [...], "mcc": [...]}
+    """
     cols = ["id", "date", "client_id", "amount", "mcc"]
     dtypes = {
         "id": "int64",
@@ -69,23 +49,9 @@ def aggregate_client_expenses(
         "mcc": "Int64",
     }
 
-    cutoff_30 = snapshot_date - pd.Timedelta(days=30)
-    cutoff_90 = snapshot_date - pd.Timedelta(days=90)
-
-    aggregates: Dict[int, Dict[str, any]] = {
-        cid: {
-            "last_inflow_amount": None,
-            "last_inflow_date": None,
-            "expenses_30": [],
-            "expenses_90": [],
-            "txn_count_30": 0,
-            "txn_count_90": 0,
-        }
-        for cid in client_ids
-    }
+    series: Dict[int, Dict[str, list]] = {cid: {"dates": [], "amounts": [], "mcc": []} for cid in client_ids}
 
     for chunk in pd.read_csv(tx_path, usecols=cols, dtype=dtypes, chunksize=chunksize):
-        # Filter early by client and legitimacy
         chunk = chunk[chunk["client_id"].isin(client_ids)]
         if chunk.empty:
             continue
@@ -94,57 +60,46 @@ def aggregate_client_expenses(
             continue
 
         chunk["date"] = pd.to_datetime(chunk["date"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
-        chunk = chunk[chunk["date"] <= snapshot_date]
-        if chunk.empty:
-            continue
-
         chunk["amount_value"] = parse_currency_series(chunk["amount"])
 
         for cid, grp in chunk.groupby("client_id"):
-            agg = aggregates.get(int(cid))
-            if agg is None:
+            rec = series.get(int(cid))
+            if rec is None:
                 continue
-            # Inflows (positive)
-            inflows = grp[grp["amount_value"] > 0]
-            if not inflows.empty:
-                idx = inflows["date"].idxmax()
-                inflow_date = inflows.loc[idx, "date"]
-                if agg["last_inflow_date"] is None or inflow_date > agg["last_inflow_date"]:
-                    agg["last_inflow_date"] = inflow_date
-                    agg["last_inflow_amount"] = float(inflows.loc[idx, "amount_value"])
+            rec["dates"].extend(grp["date"].tolist())
+            rec["amounts"].extend(grp["amount_value"].tolist())
+            rec["mcc"].extend(grp["mcc"].tolist())
 
-            # Expenses (negative)
-            expenses = grp[grp["amount_value"] < 0]
-            if expenses.empty:
-                continue
-            expenses = expenses.assign(spend=expenses["amount_value"].abs())
-
-            exp_90 = expenses[expenses["date"] > cutoff_90]
-            if not exp_90.empty:
-                agg["expenses_90"].extend(exp_90["spend"].tolist())
-                agg["txn_count_90"] += len(exp_90)
-            exp_30 = expenses[expenses["date"] > cutoff_30]
-            if not exp_30.empty:
-                agg["expenses_30"].extend(exp_30["spend"].tolist())
-                agg["txn_count_30"] += len(exp_30)
-
-    return aggregates
+    return series
 
 
-def summarize_features(
+def summarize_features_sliding(
     client_ids: Iterable[int],
-    aggregates: Dict[int, Dict[str, any]],
+    series: Dict[int, Dict[str, list]],
     user_df: pd.DataFrame,
-    snapshot_date: pd.Timestamp,
+    window_days: int = 90,
+    stride_days: int = 91,
 ) -> List[Dict[str, any]]:
-    """Compute final feature rows for each client."""
+    """Compute feature rows for each client across sliding snapshots."""
     user_df = user_df.set_index("id")
     rows: List[Dict[str, any]] = []
+    window_delta = pd.Timedelta(days=window_days)
+
     for cid in client_ids:
-        agg = aggregates.get(cid)
-        if agg is None:
+        rec = series.get(cid)
+        if rec is None or not rec["dates"]:
             continue
 
+        # Sort by date
+        dates = pd.to_datetime(pd.Series(rec["dates"])).sort_values().reset_index(drop=True)
+        amounts = pd.Series(rec["amounts"]).loc[dates.index].reset_index(drop=True)
+
+        earliest = dates.min()
+        latest = dates.max()
+        if pd.isna(earliest) or pd.isna(latest):
+            continue
+
+        # Prepare user info
         user_row = user_df.loc[cid] if cid in user_df.index else None
         yearly_income_value = (
             parse_currency_series(pd.Series([user_row["yearly_income"]])).iloc[0] if user_row is not None else np.nan
@@ -152,54 +107,78 @@ def summarize_features(
         estimated_monthly_income = yearly_income_value / 12 if pd.notna(yearly_income_value) else np.nan
         credit_score = float(user_row["credit_score"]) if user_row is not None else np.nan
 
-        exp30 = np.array(agg["expenses_30"], dtype=float)
-        exp90 = np.array(agg["expenses_90"], dtype=float)
+        # Sliding snapshots starting after at least window_days of history
+        snap = earliest + window_delta
+        while snap <= latest:
+            window_mask = (dates > snap - window_delta) & (dates <= snap)
+            window_dates = dates[window_mask]
+            window_amounts = amounts[window_mask]
 
-        total_spend_30d = float(exp30.sum()) if exp30.size else 0.0
-        total_spend_90d = float(exp90.sum()) if exp90.size else 0.0
-        avg_txn_amount_30d = float(exp30.mean()) if exp30.size else 0.0
-        avg_txn_amount_90d = float(exp90.mean()) if exp90.size else 0.0
-        max_txn_amount_90d = float(exp90.max()) if exp90.size else 0.0
-        txn_amount_median_90d = float(np.median(exp90)) if exp90.size else 0.0
-        spend_volatility_30d = float(exp30.std(ddof=0)) if exp30.size else 0.0
-        spend_volatility_90d = float(exp90.std(ddof=0)) if exp90.size else 0.0
+            inflow_mask = (dates <= snap) & (amounts > 0)
+            if inflow_mask.any():
+                inflow_dates = dates[inflow_mask]
+                last_inflow_idx = inflow_dates.idxmax()
+                last_inflow_amount = float(amounts.loc[last_inflow_idx])
+                days_since_last_inflow = float((snap - inflow_dates.max()).days)
+            else:
+                last_inflow_amount = None
+                days_since_last_inflow = None
 
-        spend_to_income_ratio_30d = safe_div(total_spend_30d, estimated_monthly_income)
-        spend_to_income_ratio_90d = safe_div(total_spend_90d, estimated_monthly_income * 3 if pd.notna(estimated_monthly_income) else 0.0)
-        avg_txn_over_income_ratio_90d = safe_div(avg_txn_amount_90d, estimated_monthly_income)
-        txn_count_30d_norm = safe_div(agg["txn_count_30"], 30.0)
+            exp_mask = window_amounts < 0
+            if not exp_mask.any():
+                snap += pd.Timedelta(days=stride_days)
+                continue
+            exp_dates = window_dates[exp_mask]
+            exp_abs = window_amounts[exp_mask].abs()
 
-        days_since_last_inflow = (
-            float((snapshot_date - agg["last_inflow_date"]).days) if agg["last_inflow_date"] is not None else None
-        )
+            last30_mask = exp_dates > snap - pd.Timedelta(days=30)
 
-        rows.append(
-            {
-                "client_id": cid,
-                "snapshot_date": snapshot_date.date().isoformat(),
-                "estimated_monthly_income": float(estimated_monthly_income) if pd.notna(estimated_monthly_income) else None,
-                "last_inflow_amount": agg["last_inflow_amount"],
-                "days_since_last_inflow": days_since_last_inflow,
-                "credit_score": float(credit_score) if pd.notna(credit_score) else None,
-                "total_spend_30d": total_spend_30d,
-                "total_spend_90d": total_spend_90d,
-                "transaction_count_30d": agg["txn_count_30"],
-                "transaction_count_90d": agg["txn_count_90"],
-                "avg_txn_amount_30d": avg_txn_amount_30d,
-                "avg_txn_amount_90d": avg_txn_amount_90d,
-                "max_txn_amount_90d": max_txn_amount_90d,
-                "txn_amount_median_90d": txn_amount_median_90d,
-                "spend_volatility_30d": spend_volatility_30d,
-                "spend_volatility_90d": spend_volatility_90d,
-                "spend_to_income_ratio_30d": spend_to_income_ratio_30d,
-                "spend_to_income_ratio_90d": spend_to_income_ratio_90d,
-                "avg_txn_over_income_ratio_90d": avg_txn_over_income_ratio_90d,
-                "txn_count_30d_norm": txn_count_30d_norm,
-                # Current transaction fields left empty for training dataset
-                "current_txn_amount": None,
-                "current_txn_mcc": None,
-            }
-        )
+            total_spend_30d = float(exp_abs[last30_mask].sum()) if exp_abs.size else 0.0
+            total_spend_90d = float(exp_abs.sum())
+            transaction_count_30d = int(last30_mask.sum())
+            transaction_count_90d = int(len(exp_abs))
+            avg_txn_amount_30d = float(exp_abs[last30_mask].mean()) if transaction_count_30d else 0.0
+            avg_txn_amount_90d = float(exp_abs.mean())
+            max_txn_amount_90d = float(exp_abs.max())
+            txn_amount_median_90d = float(exp_abs.median())
+            spend_volatility_30d = float(exp_abs[last30_mask].std(ddof=0)) if transaction_count_30d else 0.0
+            spend_volatility_90d = float(exp_abs.std(ddof=0))
+
+            spend_to_income_ratio_30d = safe_div(total_spend_30d, estimated_monthly_income)
+            spend_to_income_ratio_90d = safe_div(total_spend_90d, estimated_monthly_income * 3 if pd.notna(estimated_monthly_income) else 0.0)
+            avg_txn_over_income_ratio_90d = safe_div(avg_txn_amount_90d, estimated_monthly_income)
+            txn_count_30d_norm = safe_div(transaction_count_30d, 30.0)
+
+            rows.append(
+                {
+                    "client_id": cid,
+                    "snapshot_date": snap.date().isoformat(),
+                    "estimated_monthly_income": float(estimated_monthly_income) if pd.notna(estimated_monthly_income) else None,
+                    "last_inflow_amount": last_inflow_amount,
+                    "days_since_last_inflow": days_since_last_inflow,
+                    "credit_score": float(credit_score) if pd.notna(credit_score) else None,
+                    "total_spend_30d": total_spend_30d,
+                    "total_spend_90d": total_spend_90d,
+                    "transaction_count_30d": transaction_count_30d,
+                    "transaction_count_90d": transaction_count_90d,
+                    "avg_txn_amount_30d": avg_txn_amount_30d,
+                    "avg_txn_amount_90d": avg_txn_amount_90d,
+                    "max_txn_amount_90d": max_txn_amount_90d,
+                    "txn_amount_median_90d": txn_amount_median_90d,
+                    "spend_volatility_30d": spend_volatility_30d,
+                    "spend_volatility_90d": spend_volatility_90d,
+                    "spend_to_income_ratio_30d": spend_to_income_ratio_30d,
+                    "spend_to_income_ratio_90d": spend_to_income_ratio_90d,
+                    "avg_txn_over_income_ratio_90d": avg_txn_over_income_ratio_90d,
+                    "txn_count_30d_norm": txn_count_30d_norm,
+                    # Set placeholders to zero to avoid nulls
+                    "current_txn_amount": 0.0,
+                    "current_txn_mcc": 0,
+                }
+            )
+
+            snap += pd.Timedelta(days=stride_days)
+
     return rows
 
 
@@ -216,16 +195,14 @@ def build_training_dataset(
     user_df = pd.read_csv(user_path)
     client_ids = set(user_df["id"].astype(int).tolist())
 
-    snapshot_date = find_snapshot_date(tx_path, legit_ids, chunksize=chunksize)
-    aggregates = aggregate_client_expenses(
+    series = aggregate_client_expenses(
         tx_path=tx_path,
         legit_ids=legit_ids,
-        snapshot_date=snapshot_date,
-        client_ids=client_ids,
         chunksize=chunksize,
+        client_ids=client_ids,
     )
-    rows = summarize_features(client_ids, aggregates, user_df, snapshot_date)
-    df = pd.DataFrame(rows)
+    rows = summarize_features_sliding(client_ids, series, user_df, window_days=90, stride_days=91)
+    df = pd.DataFrame(rows).dropna()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_path, index=False)
     return output_path
