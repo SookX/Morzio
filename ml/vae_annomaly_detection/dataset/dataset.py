@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 
 
-# Feature weights to emphasize important signals; defaults to 1.0 if not listed
 DEFAULT_FEATURE_WEIGHTS = {
     "spend_to_income_ratio_30d": 2.0,
     "spend_to_income_ratio_90d": 2.0,
