@@ -65,7 +65,6 @@ def build_feature_vector(
     estimated_monthly_income = yearly_income_value / 12 if pd.notna(yearly_income_value) else float("nan")
     credit_score = float(user_row["credit_score"].iloc[0]) if not user_row.empty else float("nan")
 
-    # Stream transactions to avoid loading full CSV into memory
     last_inflow_amount = None
     last_inflow_date: Optional[pd.Timestamp] = None
     expense_records: list[tuple[pd.Timestamp, float]] = []
