@@ -26,10 +26,12 @@ public class PaymentPageController {
     public String paymentPage(@PathVariable String sessionId, Model model) throws IOException {
         PaymentServiceDto session = paymentService.getPaymentSession(UUID.fromString(sessionId));
 
-        // Use session ID as client user ID for now
         String linkToken = plaidService.createLinkToken(session.getId().toString());
 
-        model.addAttribute("amount", session.getAmount());
+        double amountInDollars = session.getAmount() / 100.0;
+        String formattedAmount = String.format("%.2f", amountInDollars);
+
+        model.addAttribute("amount", formattedAmount);
         model.addAttribute("linkToken", linkToken);
 
         return "payment";
