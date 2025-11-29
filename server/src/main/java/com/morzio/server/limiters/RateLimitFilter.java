@@ -13,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * limiter for requests for secutiry reasons 10 requests per minute
+ * limiter for requests for secutiry reasons 20 requests per minute
  */
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, RequestInfo> requestCounts = new ConcurrentHashMap<>();
-    private final int MAX_REQUESTS = 10;
+    private final int MAX_REQUESTS = 20;
     private final long TIME_WINDOW = 60000;
 
     private static class RequestInfo {
