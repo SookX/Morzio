@@ -11,11 +11,11 @@ import com.morzio.server.repositorys.PaymentSessionRepository;
 import com.morzio.server.services.PaymentService.PaymentService;
 
 @Service
-public class PaymentServiceImpl implements PaymentService{
-    
+public class PaymentServiceImpl implements PaymentService {
+
     @Autowired
     PaymentSessionRepository paymentSessionRepository;
-    
+
     @Autowired
     PaymentSessionMapper paymentSessionMapper;
 
@@ -39,10 +39,18 @@ public class PaymentServiceImpl implements PaymentService{
         PaymentSession paymentSession = new PaymentSession();
         paymentSession.setStatus("PENDING");
         paymentSession.setAmount(amount);
-        
+
         PaymentSession savedSession = paymentSessionRepository.save(paymentSession);
-        
+
         PaymentServiceDto dto = paymentSessionMapper.toDto(savedSession);
-        
+
         return dto;
-    }}
+    }
+
+    @Override
+    public PaymentServiceDto getPaymentSession(java.util.UUID id) {
+        PaymentSession session = paymentSessionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Payment session not found"));
+        return paymentSessionMapper.toDto(session);
+    }
+}
