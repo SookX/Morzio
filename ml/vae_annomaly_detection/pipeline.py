@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 import os
 from utils import get_device
-from model.vae import VAE
+from model.vae_grf import VAEGRF
 from tqdm import tqdm
 
 
@@ -16,17 +16,19 @@ class VAEAnomalyDetectionPipeline:
         self.logging_cfg = config['logging']
         self.callbacks_cfg = config['callbacks']
         self.model_cfg = config['model']
-        dropout = float(self.model_cfg.get('dropout', 0.05))
-        attn_tokens = int(self.model_cfg.get('attn_tokens', 4))
-        attn_heads = int(self.model_cfg.get('attn_heads', 4))
+        dropout = float(self.model_cfg.get('dropout', 0.1))
+        latent_map_size = int(self.model_cfg.get('latent_map_size', 4))
+        corr_type = self.model_cfg.get('corr_type', 'corr_m32')
+        self.beta = float(self.model_cfg.get('beta', 1.0))
 
-        self.model = VAE(
+        self.model = VAEGRF(
             input_dim=input_dim,
             hidden_dim=hidden_dim,
             latent_dim=latent_dim,
+            latent_map_size=latent_map_size,
             dropout=dropout,
-            attn_tokens=attn_tokens,
-            attn_heads=attn_heads,
+            corr_type=corr_type,
+            beta=self.beta,
         ).to(self.device)
 
         self.lr = float(self.training_cfg["learning_rate"])
@@ -47,11 +49,9 @@ class VAEAnomalyDetectionPipeline:
     def compute_loss(self, x, reconstructed, mu, logvar):
         recon_loss = self.criterion(reconstructed, x)
 
-        kld_loss = -0.5 * torch.mean( 
-            1 + logvar - mu.pow(2) - logvar.exp()
-        )
+        kld_loss = torch.mean(self.model.kld(mu, logvar))
 
-        total_loss = recon_loss + 5 * kld_loss
+        total_loss = recon_loss + self.beta * kld_loss
         return total_loss, recon_loss, kld_loss
 
     @torch.inference_mode()
@@ -159,7 +159,7 @@ class VAEAnomalyDetectionPipeline:
         recon_error = F.mse_loss(reconstructed, vector, reduction='none')
         recon_error = recon_error.mean(dim=-1)
 
-        kl = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1)
+        kl = self.model.kld(mu, logvar)
 
         anomaly = alpha * recon_error + beta * kl
 
