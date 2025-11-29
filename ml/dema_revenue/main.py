@@ -1,7 +1,5 @@
 import numpy as np
 
-
-
 def calculate_dobule_ema(data, alpha1=0.5, alpha2=0.3, windows_size = 3):
     
     """
@@ -31,7 +29,7 @@ def calculate_dobule_ema(data, alpha1=0.5, alpha2=0.3, windows_size = 3):
     return dema
 
 if __name__ == "__main__":
-    incomes = [1500, 1800, 1500, 1600, 1400, 1300, 1500, 1700, 1500] 
+    incomes = [10000, 100] 
     ewa_incomes = calculate_dobule_ema(incomes)
     print("Original Incomes: ", incomes)
     print("Double EMA Incomes: ", ewa_incomes)
