@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-50 text-gray-900 h-screen w-screen overflow-hidden flex items-center justify-center selection:bg-black selection:text-white">
+
+    <!-- Mobile-first container: Full screen on mobile, Card on desktop -->
+    <div
+        class="w-full h-full md:h-auto md:max-w-md md:rounded-[2rem] md:shadow-2xl md:border md:border-gray-100 bg-white flex flex-col relative overflow-hidden fade-in ring-1 ring-black/5">
+
+        <!-- Background decoration -->
+        <div
+            class="absolute top-[-20%] left-[-20%] w-[70%] h-[50%] bg-blue-50/80 rounded-full blur-3xl pointer-events-none mix-blend-multiply">
+        </div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-purple-50/80 rounded-full blur-3xl pointer-events-none mix-blend-multiply">
+        </div>
+
+        <!-- Content Wrapper -->
+        <div class="flex-1 flex flex-col relative z-10 p-8 md:p-10">
+
+            <!-- Header / Brand -->
+            <div class="flex justify-center pt-2 mb-auto">
+                <div class="flex items-center gap-2.5 opacity-90">
+                    <div
+                        class="w-8 h-8 bg-black rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-black/10">
+                        M</div>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">Morzio</span>
+                </div>
+            </div>
+
+            <!-- Main Amount Display -->
+            <div class="flex flex-col items-center justify-center my-12">
+                <p class="text-gray-400 text-xs font-semibold uppercase tracking-[0.2em] mb-6">Total Amount</p>
+                <div class="flex items-baseline relative">
+                    <span class="text-4xl font-medium text-gray-300 mr-2 absolute -left-8 top-2">$</span>
+                    <span class="text-7xl font-bold text-gray-900 tracking-tighter" th:text="${amount}">0.00</span>
+                </div>
+                <div class="mt-6 px-4 py-1.5 bg-gray-50/80 backdrop-blur-sm rounded-full border border-gray-100">
+                    <p class="text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        Secure Payment Session
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="mt-auto space-y-6">
+                <form action="#" method="POST" class="flex flex-col gap-6">
+
+                    <!-- Terms Checkbox -->
+                    <label
+                        class="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 bg-gray-50/30 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:border-gray-200 group active:scale-[0.99]">
+                        <div class="relative flex items-center mt-0.5">
+                            <input type="checkbox" name="terms" required
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border-2 border-gray-300 transition-all checked:border-black checked:bg-black hover:border-gray-400 focus:ring-0">
+                            <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+                                width="12" height="12" viewBox="0 0 12 12" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span
+                            class="text-sm text-gray-500 font-medium leading-tight group-hover:text-gray-700 transition-colors">
+                            I agree to the <a href="#"
+                                class="text-black font-bold underline decoration-gray-200 underline-offset-2 hover:decoration-black transition-all">Terms
+                                & Conditions</a>
+                        </span>
+                    </label>
+
+                    <!-- Action Button -->
+                    <button type="submit"
+                        class="group relative w-full flex items-center justify-center py-6 px-6 rounded-2xl bg-black text-white font-bold text-xl shadow-xl shadow-black/5 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-300">
+                        <span>Pay Now</span>
+                        <svg class="w-6 h-6 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="flex justify-center">
+                    <p class="text-xs font-medium text-gray-400">
+                        Secured by Morzio
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

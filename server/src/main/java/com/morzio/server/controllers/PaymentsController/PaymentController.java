@@ -23,6 +23,10 @@ public class PaymentController {
         return "pong";
     }
     
+    /**
+     * @param request
+     * @return url for the qr
+     */
     @PostMapping("/payment/initiate")
     public PaymentInitiateResponseDto initiatePayment(@RequestBody PaymentInitiateRequestDto request) {
         PaymentInitiateResponseDto response =  paymentService.url_for_qr(request.getAmount());
