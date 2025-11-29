@@ -7,7 +7,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.morzio.pos.ui.screens.AmountInputScreen
+import com.morzio.pos.ui.screens.ErrorScreen
 import com.morzio.pos.ui.screens.QRCodeScreen
+import com.morzio.pos.ui.screens.SuccessScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -21,7 +23,21 @@ fun NavGraph(navController: NavHostController) {
             "qrcode/{amount}",
             arguments = listOf(navArgument("amount") { type = NavType.StringType })
         ) {
-            QRCodeScreen(amount = it.arguments?.getString("amount"))
+            QRCodeScreen(
+                amount = it.arguments?.getString("amount"),
+                onNavigateToSuccess = { navController.navigate("success") },
+                onNavigateToError = { error -> navController.navigate("error/$error") },
+                onCancel = { navController.popBackStack() }
+            )
+        }
+        composable("success") {
+            SuccessScreen()
+        }
+        composable(
+            "error/{message}",
+            arguments = listOf(navArgument("message") { type = NavType.StringType })
+        ) {
+            ErrorScreen(message = it.arguments?.getString("message"))
         }
     }
 }
