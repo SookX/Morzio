@@ -1,0 +1,94 @@
+# ===============================
+# Project Specific
+# ===============================
+HELP.md
+
+# ===============================
+# Build directories
+# ===============================
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.gradle/
+
+# ===============================
+# Logs
+# ===============================
+*.log
+spring.log
+*.pid
+
+# ===============================
+# Java / Spring Boot
+# ===============================
+*.class
+*.jar
+*.war
+*.ear
+
+# ===============================
+# Environment / Secrets
+# ===============================
+# dotenv files
+.env
+.env.*
+.env.local
+.env.production
+.env.test
+.env.development
+
+# Other secret files
+*.secret
+*.key
+*.pem
+*.crt
+credentials.json
+
+# ===============================
+# IDE Specific
+# ===============================
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Other temporary files
+# ===============================
+*.swp
+*~.nib
