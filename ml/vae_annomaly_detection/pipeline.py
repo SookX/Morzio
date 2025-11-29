@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn import functional as F
 import os
 from utils import get_device
 from model.vae import VAE
@@ -17,8 +18,9 @@ class VAEAnomalyDetectionPipeline:
         self.logging_cfg = config['logging']
         self.callbacks_cfg = config['callbacks']
 
-        lr = self.training_cfg.get("learning_rate", 3e-4)
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
+        self.lr = float(self.training_cfg["learning_rate"])
+
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
 
         self.criterion = nn.MSELoss(reduction="mean")
 
@@ -29,11 +31,11 @@ class VAEAnomalyDetectionPipeline:
     def compute_loss(self, x, reconstructed, mu, logvar):
         recon_loss = self.criterion(reconstructed, x)
 
-        kld_loss = -0.5 * torch.mean( # KL Divergence Loss
+        kld_loss = -0.5 * torch.mean( 
             1 + logvar - mu.pow(2) - logvar.exp()
         )
 
-        total_loss = recon_loss + kld_loss
+        total_loss = recon_loss + 5 * kld_loss
         return total_loss, recon_loss, kld_loss
 
     @torch.inference_mode()
@@ -119,3 +121,36 @@ class VAEAnomalyDetectionPipeline:
 
         print("Training complete.")
 
+    def load_model(self, checkpoint_path):
+        self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
+        self.model.to(self.device)
+        print(f"Model loaded from {checkpoint_path}")
+
+    def inference(self, vector):
+        self.model.eval()
+        vector = vector.to(self.device)
+        reconstructed, mu, logvar = self.model(vector)
+        return reconstructed, mu, logvar
+
+    def anomaly_score(self, vector, alpha=1.0, beta=0.1):
+
+        vector = vector.to(self.device)
+
+        reconstructed, mu, logvar = self.inference(vector)
+
+    
+        recon_error = F.mse_loss(reconstructed, vector, reduction='none')
+        recon_error = recon_error.mean(dim=-1)
+
+        kl = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1)
+
+        anomaly = alpha * recon_error + beta * kl
+
+        return (
+            anomaly.detach().cpu(),
+            recon_error.detach().cpu(),
+            kl.detach().cpu()
+        )
+
+
+    

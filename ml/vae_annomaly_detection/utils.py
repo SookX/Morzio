@@ -2,12 +2,9 @@ import yaml
 import os
 import torch
 
-def load_env(env_path):
-    """Load environment variables from a YAML file."""
-    with open(env_path, 'r') as file:
-        env_vars = yaml.safe_load(file)
-    for key, value in env_vars.items():
-        os.environ[key] = str(value)
+def read_config(config):
+    with open(config, "r") as f:
+        return yaml.safe_load(f)
 
 def get_device():
     """Get the available device (GPU if available, MPS if available, else CPU)."""
@@ -17,3 +14,11 @@ def get_device():
         return torch.device('mps')
     else:
         return torch.device('cpu')
+    
+def data_split(dataset):
+    total_len = len(dataset)
+    train_len = int(total_len * 0.8)
+    val_len = total_len - train_len
+
+    train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_len, val_len])
+    return train_dataset, val_dataset
