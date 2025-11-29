@@ -1,59 +1,46 @@
 import torch
 import torch.nn as nn
-from model.attention.simple_attention import SimpleAttention
+
+
+class ResidualMLPBlock(nn.Module):
+    """Two-layer MLP with residual connection and optional projection."""
+
+    def __init__(self, in_dim: int, out_dim: int, dropout: float = 0.05) -> None:
+        super().__init__()
+        hidden = max(out_dim, in_dim)
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, out_dim),
+            nn.GELU(),
+        )
+        self.shortcut = nn.Identity() if in_dim == out_dim else nn.Linear(in_dim, out_dim)
+        self.norm = nn.LayerNorm(out_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.net(x)
+        return self.norm(out + self.shortcut(x))
+
 
 class Encoder(nn.Module):
-    def __init__(self, input_dim=20, base_dim=32):
+    def __init__(self, input_dim: int = 20, hidden_dims=None, dropout: float = 0.05) -> None:
         super().__init__()
-        
-        # 20 -> 1*32
-        self.block1 = nn.Sequential(
-            nn.Linear(input_dim, base_dim),
-            nn.LayerNorm(base_dim),
-            nn.LeakyReLU(),
-            # nn.Dropout(0.1)
-        )
-        self.attention1 = SimpleAttention(base_dim)
-        
-        # 1*32 -> 2*32
-        self.block2 = nn.Sequential(
-            nn.Linear(base_dim, base_dim * 2),
-            nn.LayerNorm(base_dim * 2),
-            nn.LeakyReLU(),
-            #nn.Dropout(0.1)
-        )
-        self.attention2 = SimpleAttention(base_dim * 2)
-        
-        # 2*32 -> 4*32
-        self.block3 = nn.Sequential(
-            nn.Linear(base_dim * 2, base_dim * 4),
-            nn.LayerNorm(base_dim * 4),
-            nn.LeakyReLU(),
-            #nn.Dropout(0.1)
-        )
-        self.attention3 = SimpleAttention(base_dim * 4)
-        
-        
-        self.res_proj = nn.Linear(base_dim, base_dim * 4)
-    
-    def forward(self, x):
-        h1 = self.block1(x)
-        h1_att = self.attention1(h1)
-        
-        h2 = self.block2(h1_att)
-        h2_att = self.attention2(h2)
-        
-        h3 = self.block3(h2_att)
-        out = self.attention3(h3)
-        
-        residual = self.res_proj(h1)
-        
-        return out + residual
+        if hidden_dims is None:
+            hidden_dims = [64, 128, 256]
+        dims = [input_dim, *hidden_dims]
+        blocks = []
+        for in_dim, out_dim in zip(dims[:-1], dims[1:]):
+            blocks.append(ResidualMLPBlock(in_dim, out_dim, dropout))
+        self.blocks = nn.Sequential(*blocks)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.blocks(x)
 
 
 if __name__ == "__main__":
     x = torch.randn((10, 20))
-    encoder = Encoder(input_dim=20, hidden_dim=50, latent_dim=10)
+    encoder = Encoder(input_dim=20, hidden_dims=[64, 128, 256])
     z = encoder(x)
     print("Input shape:", x.shape)
     print("Encoded shape:", z.shape)

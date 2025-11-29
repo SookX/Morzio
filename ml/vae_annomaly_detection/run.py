@@ -1,14 +1,11 @@
-import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
-from model.vae import VAE
 from utils import read_config, data_split
 from pipeline import VAEAnomalyDetectionPipeline
-from dataset.dataset import CustomDataset
+from dataset.dataset import TransactionDataset
 
 if __name__ == "__main__":
     config = read_config("./config.yaml")
-    dataset = CustomDataset("../data/training_features.csv")
+    dataset = TransactionDataset("../data/training_features.csv")
     train_dataset, test_dataset = data_split(dataset)
 
     batch_size = int(config["training"]["batch_size"])
