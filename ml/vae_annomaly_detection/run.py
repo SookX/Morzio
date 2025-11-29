@@ -8,7 +8,7 @@ from dataset.dataset import CustomDataset
 
 if __name__ == "__main__":
     config = read_config("./config.yaml")
-    dataset = CustomDataset("../dataset/dist/training_features.csv")
+    dataset = CustomDataset("../data/training_features.csv")
     train_dataset, test_dataset = data_split(dataset)
 
     batch_size = int(config["training"]["batch_size"])
