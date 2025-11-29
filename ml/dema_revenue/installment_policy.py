@@ -38,6 +38,7 @@ def max_installments_weekly(
     max_weeks: int = 48,
     min_weeks: int = 4,
     affordability_fraction_weekly: float = 0.25,
+    prefer_max_if_income_multiple: Optional[float] = None,
 ) -> int:
     """
     Determine the maximum number of weekly installments given VAE MSE risk and affordability.
@@ -46,6 +47,9 @@ def max_installments_weekly(
     - purchase_amount: total cost of the purchase.
     - estimated_monthly_income: monthly income proxy (e.g., DEMA from inflows or yearly/12).
     - affordability_fraction_weekly: max share of weekly income allowed per installment.
+    - prefer_max_if_income_multiple: if set, and weekly income exceeds this multiple of the
+      per-week cost at the minimum tenure, force baseline to max_weeks (useful when high income
+      users still prefer longer plans).
     """
     # Risk multiplier shrinks linearly with MSE up to mse_cap
     risk_multiplier = max(0.0, 1.0 - mse / mse_cap)
@@ -60,6 +64,9 @@ def max_installments_weekly(
         max_weekly_payment = weekly_income * affordability_fraction_weekly
         if max_weekly_payment <= 0:
             baseline_weeks = min_weeks
+        elif prefer_max_if_income_multiple and weekly_income >= prefer_max_if_income_multiple * (purchase_amount / max(min_weeks, 1)):
+            # Very high income: allow max tenure if desired
+            baseline_weeks = max_weeks
         else:
             baseline_weeks = max(min_weeks, math.ceil(purchase_amount / max_weekly_payment))
     else:
