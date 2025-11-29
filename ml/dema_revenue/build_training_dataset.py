@@ -90,9 +90,19 @@ def summarize_features_sliding(
         if rec is None or not rec["dates"]:
             continue
 
-        # Sort by date
-        dates = pd.to_datetime(pd.Series(rec["dates"])).sort_values().reset_index(drop=True)
-        amounts = pd.Series(rec["amounts"]).loc[dates.index].reset_index(drop=True)
+        # Sort by date and keep amounts/mcc aligned
+        df_rec = pd.DataFrame(
+            {
+                "date": pd.to_datetime(rec["dates"]),
+                "amount": pd.Series(rec["amounts"], dtype="float"),
+                "mcc": pd.Series(rec["mcc"]),
+            }
+        ).dropna(subset=["date"]).sort_values("date").reset_index(drop=True)
+        if df_rec.empty:
+            continue
+        dates = df_rec["date"]
+        amounts = df_rec["amount"]
+        mccs = df_rec["mcc"]
 
         earliest = dates.min()
         latest = dates.max()
@@ -111,8 +121,7 @@ def summarize_features_sliding(
         snap = earliest + window_delta
         while snap <= latest:
             window_mask = (dates > snap - window_delta) & (dates <= snap)
-            window_dates = dates[window_mask]
-            window_amounts = amounts[window_mask]
+            window_df = df_rec[window_mask]
 
             inflow_mask = (dates <= snap) & (amounts > 0)
             if inflow_mask.any():
@@ -124,12 +133,16 @@ def summarize_features_sliding(
                 last_inflow_amount = None
                 days_since_last_inflow = None
 
-            exp_mask = window_amounts < 0
-            if not exp_mask.any():
+            expense_df = window_df[window_df["amount"] < 0]
+            if expense_df.empty:
                 snap += pd.Timedelta(days=stride_days)
                 continue
-            exp_dates = window_dates[exp_mask]
-            exp_abs = window_amounts[exp_mask].abs()
+            exp_dates = expense_df["date"]
+            exp_abs = expense_df["amount"].abs()
+
+            last_expense = expense_df.iloc[-1]
+            current_txn_amount = float(last_expense["amount"])
+            current_txn_mcc = int(last_expense["mcc"]) if pd.notna(last_expense["mcc"]) else 0
 
             last30_mask = exp_dates > snap - pd.Timedelta(days=30)
 
@@ -171,9 +184,8 @@ def summarize_features_sliding(
                     "spend_to_income_ratio_90d": spend_to_income_ratio_90d,
                     "avg_txn_over_income_ratio_90d": avg_txn_over_income_ratio_90d,
                     "txn_count_30d_norm": txn_count_30d_norm,
-                    # Set placeholders to zero to avoid nulls
-                    "current_txn_amount": 0.0,
-                    "current_txn_mcc": 0,
+                    "current_txn_amount": current_txn_amount,
+                    "current_txn_mcc": current_txn_mcc,
                 }
             )
 
