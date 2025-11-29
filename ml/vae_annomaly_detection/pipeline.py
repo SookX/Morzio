@@ -3,7 +3,13 @@ import torch.nn as nn
 from torch.nn import functional as F
 import os
 from utils import get_device
-from model.vae_grf import VAEGRF
+from tqdm import tqdm
+
+import torch
+import torch.nn as nn
+import os
+from utils import get_device
+from model.vae import VAE
 from tqdm import tqdm
 
 
@@ -11,34 +17,15 @@ class VAEAnomalyDetectionPipeline:
     def __init__(self, input_dim, hidden_dim, latent_dim, config):
         self.device = get_device()
 
+        self.model = VAE(input_dim, hidden_dim, latent_dim).to(self.device)
+
         self.config = config
         self.training_cfg = config['training']
         self.logging_cfg = config['logging']
         self.callbacks_cfg = config['callbacks']
-        self.model_cfg = config['model']
-        dropout = float(self.model_cfg.get('dropout', 0.1))
-        latent_map_size = int(self.model_cfg.get('latent_map_size', 4))
-        corr_type = self.model_cfg.get('corr_type', 'corr_m32')
-        self.beta = float(self.model_cfg.get('beta', 1.0))
 
-        self.model = VAEGRF(
-            input_dim=input_dim,
-            hidden_dim=hidden_dim,
-            latent_dim=latent_dim,
-            latent_map_size=latent_map_size,
-            dropout=dropout,
-            corr_type=corr_type,
-            beta=self.beta,
-        ).to(self.device)
-
-        self.lr = float(self.training_cfg["learning_rate"])
-
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            self.optimizer,
-            T_max=self.training_cfg['epochs'],
-            eta_min=1e-6
-        )
+        lr = float(self.training_cfg['learning_rate'])
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
 
         self.criterion = nn.MSELoss(reduction="mean")
 
@@ -49,9 +36,11 @@ class VAEAnomalyDetectionPipeline:
     def compute_loss(self, x, reconstructed, mu, logvar):
         recon_loss = self.criterion(reconstructed, x)
 
-        kld_loss = torch.mean(self.model.kld(mu, logvar))
+        kld_loss = -0.5 * torch.mean( # KL Divergence Loss
+            1 + logvar - mu.pow(2) - logvar.exp()
+        )
 
-        total_loss = recon_loss + self.beta * kld_loss
+        total_loss = recon_loss + kld_loss
         return total_loss, recon_loss, kld_loss
 
     @torch.inference_mode()
@@ -103,7 +92,6 @@ class VAEAnomalyDetectionPipeline:
 
                 loss, _, _ = self.compute_loss(batch, reconstructed, mu, logvar)
                 loss.backward()
-
                 self.optimizer.step()
 
                 total_loss += loss.item()
@@ -135,20 +123,22 @@ class VAEAnomalyDetectionPipeline:
                     if self.early_stop_counter >= patience:
                         print(f"Early stopping triggered at epoch {epoch}")
                         break
-            self.scheduler.step()
+
         print("Training complete.")
 
     def load_model(self, checkpoint_path):
         self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
-        self.model.to(self.device)
-        print(f"Model loaded from {checkpoint_path}")
-
-    def inference(self, vector):
         self.model.eval()
-        vector = vector.to(self.device)
-        reconstructed, mu, logvar = self.model(vector)
-        return reconstructed, mu, logvar
-
+        print(f"Model loaded from {checkpoint_path}")
+    
+    def inference(self, x):
+        self.model.eval()
+        x = x.to(self.device)
+        with torch.inference_mode():
+            reconstructed, mu, logvar = self.model(x)
+            #loss, recon_loss, kld_loss = self.compute_loss(x, reconstructed, mu, logvar)
+        return reconstructed, mu, logvar 
+    
     def anomaly_score(self, vector, alpha=1.0, beta=0.1):
 
         vector = vector.to(self.device)
@@ -159,7 +149,7 @@ class VAEAnomalyDetectionPipeline:
         recon_error = F.mse_loss(reconstructed, vector, reduction='none')
         recon_error = recon_error.mean(dim=-1)
 
-        kl = self.model.kld(mu, logvar)
+        kl = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1)
 
         anomaly = alpha * recon_error + beta * kl
 
@@ -168,6 +158,3 @@ class VAEAnomalyDetectionPipeline:
             recon_error.detach().cpu(),
             kl.detach().cpu()
         )
-
-
-    

@@ -154,6 +154,36 @@ class TransactionDataset(Dataset):
         stats = self.scaler_stats()
         scaled = stats.transform(values)
         return torch.tensor(scaled, dtype=torch.float32)
+    
+    def prepare_input_list(self, values: list[float], scaler: ScalerStats) -> torch.Tensor:
+        """
+        Takes a raw feature list (already in correct column order),
+        applies log-scaling, standardization, and weighting,
+        and returns a model-ready tensor.
+        """
+        if len(values) != len(scaler.columns):
+            raise ValueError(
+                f"Expected {len(scaler.columns)} features, got {len(values)}"
+            )
+
+        processed = []
+        for val, col in zip(values, scaler.columns):
+
+            try:
+                v = float(val)
+            except:
+                v = 0.0
+
+            if col in LOG_SCALE_COLUMNS:
+                v = np.log1p(max(v, 0))
+
+            processed.append(v)
+
+        transformed = scaler.transform(processed)
+
+        return torch.tensor(transformed, dtype=torch.float32).unsqueeze(0)
+
+
 
 
 if __name__ == "__main__":
