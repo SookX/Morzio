@@ -10,8 +10,8 @@ class Encoder(nn.Module):
         self.block1 = nn.Sequential(
             nn.Linear(input_dim, base_dim),
             nn.LayerNorm(base_dim),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+            # nn.Dropout(0.1)
         )
         self.attention1 = SimpleAttention(base_dim)
         
@@ -19,8 +19,8 @@ class Encoder(nn.Module):
         self.block2 = nn.Sequential(
             nn.Linear(base_dim, base_dim * 2),
             nn.LayerNorm(base_dim * 2),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+            #nn.Dropout(0.1)
         )
         self.attention2 = SimpleAttention(base_dim * 2)
         
@@ -28,8 +28,8 @@ class Encoder(nn.Module):
         self.block3 = nn.Sequential(
             nn.Linear(base_dim * 2, base_dim * 4),
             nn.LayerNorm(base_dim * 4),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+            #nn.Dropout(0.1)
         )
         self.attention3 = SimpleAttention(base_dim * 4)
         

@@ -21,6 +21,11 @@ class VAEAnomalyDetectionPipeline:
         self.lr = float(self.training_cfg["learning_rate"])
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            self.optimizer,
+            T_max=self.training_cfg['epochs'],
+            eta_min=1e-6
+        )
 
         self.criterion = nn.MSELoss(reduction="mean")
 
@@ -87,6 +92,7 @@ class VAEAnomalyDetectionPipeline:
 
                 loss, _, _ = self.compute_loss(batch, reconstructed, mu, logvar)
                 loss.backward()
+
                 self.optimizer.step()
 
                 total_loss += loss.item()
@@ -118,7 +124,7 @@ class VAEAnomalyDetectionPipeline:
                     if self.early_stop_counter >= patience:
                         print(f"Early stopping triggered at epoch {epoch}")
                         break
-
+            self.scheduler.step()
         print("Training complete.")
 
     def load_model(self, checkpoint_path):

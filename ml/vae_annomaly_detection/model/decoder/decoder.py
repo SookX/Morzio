@@ -9,31 +9,31 @@ class Decoder(nn.Module):
         self.block1 = nn.Sequential(
             nn.Linear(latent_dim, base_dim * 4),
             nn.LayerNorm(base_dim * 4),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+        #    nn.Dropout(0.1)
         )
         self.attention1 = SimpleAttention(base_dim * 4)
         
         self.block2 = nn.Sequential(
             nn.Linear(base_dim * 4, base_dim * 2),
             nn.LayerNorm(base_dim * 2),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+         #   nn.Dropout(0.1)
         )
         self.attention2 = SimpleAttention(base_dim * 2)
         
         self.block3 = nn.Sequential(
             nn.Linear(base_dim * 2, base_dim),
             nn.LayerNorm(base_dim),
-            nn.SiLU(),
-            nn.Dropout(0.1)
+            nn.LeakyReLU(),
+            #nn.Dropout(0.1)
         )
         self.attention3 = SimpleAttention(base_dim)
         
         self.block4 = nn.Sequential(
             nn.Linear(base_dim, output_dim),
             nn.LayerNorm(output_dim),
-            nn.SiLU()
+            nn.LeakyReLU()
         )
         
         self.res_proj = nn.Linear(base_dim * 4, output_dim)
