@@ -1,6 +1,6 @@
 training:
   batch_size: 64
-  epochs: 30
+  epochs: 100
   learning_rate: 3e-4
 
 
