@@ -1,0 +1,14 @@
+# Environments and IDE
+.venv/
+.vscode/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated artifacts and large data
+ml/vae_annomaly_detection/dataset/dist/
+ml/vae_annomaly_detection/dataset/data_visuals/*.png
+ml/vae_annomaly_detection/dataset/data_visuals/client_*.csv
+ml/vae_annomaly_detection/dataset/data_visuals/archive.zip
+**/.ipynb_checkpoints/
