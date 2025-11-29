@@ -3,7 +3,12 @@ from __future__ import annotations
 import math
 from typing import Iterable, Optional
 
-from ml.dema_revenue.main import calculate_dobule_ema
+# Allow running as a script from repo root without installing package
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from dema_revenue.main import calculate_dobule_ema
 
 
 def estimate_monthly_income_from_inflows(
