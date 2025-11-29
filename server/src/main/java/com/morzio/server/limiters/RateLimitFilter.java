@@ -1,4 +1,4 @@
-package com.morzio.limiters;
+package com.morzio.server.limiters;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
