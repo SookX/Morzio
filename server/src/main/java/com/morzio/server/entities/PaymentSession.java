@@ -29,6 +29,7 @@ public class PaymentSession {
 
     private String status;
 
+    // in cents
     private Long amount;    
 
     @CreationTimestamp
@@ -39,5 +40,5 @@ public class PaymentSession {
         if (id == null) {
             id = UUID.randomUUID();
         }
-    }
+    } 
 }
