@@ -16,18 +16,17 @@ class VAEAnomalyDetectionPipeline:
         self.logging_cfg = config['logging']
         self.callbacks_cfg = config['callbacks']
         self.model_cfg = config['model']
-
-        hidden_layers = self.model_cfg.get('hidden_layers')
-        if hidden_layers is not None:
-            hidden_layers = [int(h) for h in hidden_layers]
         dropout = float(self.model_cfg.get('dropout', 0.05))
+        attn_tokens = int(self.model_cfg.get('attn_tokens', 4))
+        attn_heads = int(self.model_cfg.get('attn_heads', 4))
 
         self.model = VAE(
             input_dim=input_dim,
-            base_dim=hidden_dim,
+            hidden_dim=hidden_dim,
             latent_dim=latent_dim,
-            hidden_dims=hidden_layers,
             dropout=dropout,
+            attn_tokens=attn_tokens,
+            attn_heads=attn_heads,
         ).to(self.device)
 
         self.lr = float(self.training_cfg["learning_rate"])

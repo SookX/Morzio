@@ -1,31 +1,33 @@
 import torch
 import torch.nn as nn
 
-from model.encoder.encoder import ResidualMLPBlock
+from model.encoder.encoder import TokenSelfAttention
 
 
 class Decoder(nn.Module):
     def __init__(
         self,
-        output_dim: int = 20,
-        latent_dim: int | None = None,
-        hidden_dims=None,
+        output_dim: int,
+        hidden_dim: int,
+        latent_dim: int,
         dropout: float = 0.05,
+        attn_tokens: int = 4,
+        attn_heads: int = 4,
     ) -> None:
         super().__init__()
-        if latent_dim is None:
-            raise ValueError("latent_dim must be provided")
-        if hidden_dims is None:
-            hidden_dims = [256, 128, 64]
-
-        dims = [latent_dim, *hidden_dims]
-        blocks = []
-        for in_dim, out_dim in zip(dims[:-1], dims[1:]):
-            blocks.append(ResidualMLPBlock(in_dim, out_dim, dropout))
-        self.blocks = nn.Sequential(*blocks)
-
-        self.output_layer = nn.Linear(dims[-1], output_dim)
+        self.latent_proj = nn.Sequential(
+            nn.Linear(latent_dim, hidden_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
+        )
+        self.attn = TokenSelfAttention(hidden_dim, attn_tokens, attn_heads, dropout)
+        self.output_proj = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, output_dim),
+        )
 
     def forward(self, z: torch.Tensor) -> torch.Tensor:
-        h = self.blocks(z)
-        return self.output_layer(h)
+        z = self.latent_proj(z)
+        z = self.attn(z)
+        return self.output_proj(z)

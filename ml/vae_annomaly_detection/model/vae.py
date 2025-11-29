@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Iterable
-
 import torch
 import torch.nn as nn
 
@@ -16,24 +14,29 @@ class VAE(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        base_dim: int = 64,
+        hidden_dim: int = 64,
         latent_dim: int = 32,
-        hidden_dims: Iterable[int] | None = None,
         dropout: float = 0.05,
+        attn_tokens: int = 4,
+        attn_heads: int = 4,
     ) -> None:
         super().__init__()
 
-        if hidden_dims is None:
-            hidden_dims = [base_dim, base_dim * 2, base_dim * 4]
-
-        self.encoder = Encoder(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout)
-        self.latent = LatentSpaceHead(encoder_dim=hidden_dims[-1], latent_dim=latent_dim)
-        decoder_dims = list(reversed(hidden_dims))
+        self.encoder = Encoder(
+            input_dim=input_dim,
+            hidden_dim=hidden_dim,
+            dropout=dropout,
+            attn_tokens=attn_tokens,
+            attn_heads=attn_heads,
+        )
+        self.latent = LatentSpaceHead(encoder_dim=self.encoder.output_dim, latent_dim=latent_dim)
         self.decoder = Decoder(
             output_dim=input_dim,
+            hidden_dim=hidden_dim,
             latent_dim=latent_dim,
-            hidden_dims=decoder_dims,
             dropout=dropout,
+            attn_tokens=attn_tokens,
+            attn_heads=attn_heads,
         )
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:  # type: ignore[override]
