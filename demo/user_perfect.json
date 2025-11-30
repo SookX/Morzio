@@ -1,0 +1,331 @@
+{
+    "override_accounts": [
+        {
+            "type": "depository",
+            "subtype": "checking",
+            "starting_balance": 28450.67,
+            "meta": {
+                "name": "Premium Bank",
+                "official_name": "Premium Checking Plus"
+            },
+            "numbers": {
+                "account": "1234567890123456",
+                "ach_routing": "122105155"
+            },
+            "transactions": [
+                {
+                    "date_transacted": "2025-11-29",
+                    "date_posted": "2025-11-30",
+                    "amount": 89.99,
+                    "description": "NETFLIX SUBSCRIPTION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-28",
+                    "date_posted": "2025-11-29",
+                    "amount": 156.78,
+                    "description": "WHOLE FOODS MARKET",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-25",
+                    "date_posted": "2025-11-26",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-23",
+                    "date_posted": "2025-11-24",
+                    "amount": 45.00,
+                    "description": "SPOTIFY PREMIUM",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-21",
+                    "date_posted": "2025-11-22",
+                    "amount": 234.56,
+                    "description": "TRADER JOES GROCERY",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-19",
+                    "date_posted": "2025-11-20",
+                    "amount": 1850.00,
+                    "description": "RENT PAYMENT - LUXURY APARTMENTS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-17",
+                    "date_posted": "2025-11-18",
+                    "amount": 67.89,
+                    "description": "SHELL GAS STATION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-15",
+                    "date_posted": "2025-11-16",
+                    "amount": 125.00,
+                    "description": "ELECTRIC COMPANY BILL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-13",
+                    "date_posted": "2025-11-14",
+                    "amount": 189.00,
+                    "description": "TARGET HOUSEHOLD ITEMS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-10",
+                    "date_posted": "2025-11-11",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-08",
+                    "date_posted": "2025-11-09",
+                    "amount": 78.50,
+                    "description": "GYM MEMBERSHIP - EQUINOX",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-06",
+                    "date_posted": "2025-11-07",
+                    "amount": 145.67,
+                    "description": "COSTCO WHOLESALE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-04",
+                    "date_posted": "2025-11-05",
+                    "amount": 85.00,
+                    "description": "INTERNET BILL - COMCAST",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-02",
+                    "date_posted": "2025-11-03",
+                    "amount": 56.78,
+                    "description": "CHEVRON GAS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-30",
+                    "date_posted": "2025-10-31",
+                    "amount": 198.00,
+                    "description": "WHOLE FOODS MARKET",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-27",
+                    "date_posted": "2025-10-28",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-25",
+                    "date_posted": "2025-10-26",
+                    "amount": 89.99,
+                    "description": "NETFLIX SUBSCRIPTION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-23",
+                    "date_posted": "2025-10-24",
+                    "amount": 1850.00,
+                    "description": "RENT PAYMENT - LUXURY APARTMENTS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-21",
+                    "date_posted": "2025-10-22",
+                    "amount": 167.89,
+                    "description": "TRADER JOES GROCERY",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-19",
+                    "date_posted": "2025-10-20",
+                    "amount": 45.00,
+                    "description": "SPOTIFY PREMIUM",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-17",
+                    "date_posted": "2025-10-18",
+                    "amount": 72.34,
+                    "description": "BP GAS STATION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-15",
+                    "date_posted": "2025-10-16",
+                    "amount": 118.00,
+                    "description": "ELECTRIC COMPANY BILL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-12",
+                    "date_posted": "2025-10-13",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-10",
+                    "date_posted": "2025-10-11",
+                    "amount": 78.50,
+                    "description": "GYM MEMBERSHIP - EQUINOX",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-08",
+                    "date_posted": "2025-10-09",
+                    "amount": 234.00,
+                    "description": "TARGET HOUSEHOLD ITEMS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-06",
+                    "date_posted": "2025-10-07",
+                    "amount": 85.00,
+                    "description": "INTERNET BILL - COMCAST",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-04",
+                    "date_posted": "2025-10-05",
+                    "amount": 178.90,
+                    "description": "COSTCO WHOLESALE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-02",
+                    "date_posted": "2025-10-03",
+                    "amount": 65.00,
+                    "description": "SHELL GAS STATION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-29",
+                    "date_posted": "2025-09-30",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-27",
+                    "date_posted": "2025-09-28",
+                    "amount": 89.99,
+                    "description": "NETFLIX SUBSCRIPTION",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-25",
+                    "date_posted": "2025-09-26",
+                    "amount": 1850.00,
+                    "description": "RENT PAYMENT - LUXURY APARTMENTS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-23",
+                    "date_posted": "2025-09-24",
+                    "amount": 189.45,
+                    "description": "WHOLE FOODS MARKET",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-21",
+                    "date_posted": "2025-09-22",
+                    "amount": 45.00,
+                    "description": "SPOTIFY PREMIUM",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-19",
+                    "date_posted": "2025-09-20",
+                    "amount": 156.78,
+                    "description": "TRADER JOES GROCERY",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-17",
+                    "date_posted": "2025-09-18",
+                    "amount": 122.00,
+                    "description": "ELECTRIC COMPANY BILL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-14",
+                    "date_posted": "2025-09-15",
+                    "amount": -6500.00,
+                    "description": "EMPLOYER INC PAYROLL DIRECT DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-12",
+                    "date_posted": "2025-09-13",
+                    "amount": 78.50,
+                    "description": "GYM MEMBERSHIP - EQUINOX",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-10",
+                    "date_posted": "2025-09-11",
+                    "amount": 69.99,
+                    "description": "CHEVRON GAS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-08",
+                    "date_posted": "2025-09-09",
+                    "amount": 85.00,
+                    "description": "INTERNET BILL - COMCAST",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-06",
+                    "date_posted": "2025-09-07",
+                    "amount": 145.00,
+                    "description": "TARGET HOUSEHOLD ITEMS",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-04",
+                    "date_posted": "2025-09-05",
+                    "amount": 198.67,
+                    "description": "COSTCO WHOLESALE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-02",
+                    "date_posted": "2025-09-03",
+                    "amount": 58.00,
+                    "description": "BP GAS STATION",
+                    "currency": "USD"
+                }
+            ],
+            "identity": {
+                "names": [
+                    "Sarah Johnson"
+                ],
+                "addresses": [
+                    {
+                        "primary": true,
+                        "data": {
+                            "country": "US",
+                            "city": "San Francisco",
+                            "street": "456 Marina Blvd",
+                            "postal_code": "94123",
+                            "region": "CA"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+

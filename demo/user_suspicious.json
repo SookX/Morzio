@@ -1,0 +1,260 @@
+{
+    "override_accounts": [
+        {
+            "type": "depository",
+            "subtype": "checking",
+            "starting_balance": 127.45,
+            "meta": {
+                "name": "Risky Bank",
+                "official_name": "Basic Checking"
+            },
+            "numbers": {
+                "account": "9999888877776666",
+                "ach_routing": "122105155"
+            },
+            "transactions": [
+                {
+                    "date_transacted": "2025-11-29",
+                    "date_posted": "2025-11-30",
+                    "amount": 1892.00,
+                    "description": "ONLINE CASINO WITHDRAWAL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-27",
+                    "date_posted": "2025-11-28",
+                    "amount": 2450.00,
+                    "description": "CRYPTO EXCHANGE PURCHASE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-24",
+                    "date_posted": "2025-11-25",
+                    "amount": 1567.89,
+                    "description": "LUXURY GOODS STORE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-22",
+                    "date_posted": "2025-11-23",
+                    "amount": 3100.00,
+                    "description": "SPORTS BETTING DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-20",
+                    "date_posted": "2025-11-21",
+                    "amount": -150.00,
+                    "description": "VENMO TRANSFER FROM FRIEND",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-18",
+                    "date_posted": "2025-11-19",
+                    "amount": 945.00,
+                    "description": "PAYDAY LOAN PAYMENT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-15",
+                    "date_posted": "2025-11-16",
+                    "amount": 1789.99,
+                    "description": "ELECTRONICS STORE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-12",
+                    "date_posted": "2025-11-13",
+                    "amount": 2500.00,
+                    "description": "ONLINE GAMBLING SITE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-10",
+                    "date_posted": "2025-11-11",
+                    "amount": -100.00,
+                    "description": "CASH DEPOSIT ATM",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-08",
+                    "date_posted": "2025-11-09",
+                    "amount": 734.56,
+                    "description": "CASH ADVANCE FEE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-05",
+                    "date_posted": "2025-11-06",
+                    "amount": 1678.00,
+                    "description": "CRYPTO TRADING PLATFORM",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-11-02",
+                    "date_posted": "2025-11-03",
+                    "amount": 1950.00,
+                    "description": "CASINO ROYAL ONLINE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-30",
+                    "date_posted": "2025-10-31",
+                    "amount": 2800.00,
+                    "description": "HIGH-END FASHION OUTLET",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-27",
+                    "date_posted": "2025-10-28",
+                    "amount": -120.00,
+                    "description": "GIG WORK PAYMENT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-24",
+                    "date_posted": "2025-10-25",
+                    "amount": 1445.00,
+                    "description": "OVERDRAFT FEE CHARGE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-21",
+                    "date_posted": "2025-10-22",
+                    "amount": 2100.00,
+                    "description": "BETTING EXCHANGE DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-18",
+                    "date_posted": "2025-10-19",
+                    "amount": 1567.00,
+                    "description": "LUXURY WATCH STORE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-15",
+                    "date_posted": "2025-10-16",
+                    "amount": -80.00,
+                    "description": "PAYPAL TRANSFER",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-12",
+                    "date_posted": "2025-10-13",
+                    "amount": 3300.00,
+                    "description": "CRYPTO FUTURES TRADING",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-09",
+                    "date_posted": "2025-10-10",
+                    "amount": 1890.00,
+                    "description": "ONLINE SLOTS WITHDRAWAL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-06",
+                    "date_posted": "2025-10-07",
+                    "amount": 945.00,
+                    "description": "PAYDAY LOAN INTEREST",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-10-03",
+                    "date_posted": "2025-10-04",
+                    "amount": -90.00,
+                    "description": "FREELANCE PAYMENT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-30",
+                    "date_posted": "2025-10-01",
+                    "amount": 2650.00,
+                    "description": "SPORTSBOOK DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-27",
+                    "date_posted": "2025-09-28",
+                    "amount": 1780.00,
+                    "description": "DESIGNER HANDBAG PURCHASE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-24",
+                    "date_posted": "2025-09-25",
+                    "amount": -75.00,
+                    "description": "VENMO RECEIVED",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-21",
+                    "date_posted": "2025-09-22",
+                    "amount": 2200.00,
+                    "description": "POKER SITE DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-18",
+                    "date_posted": "2025-09-19",
+                    "amount": 840.00,
+                    "description": "LATE FEE CREDIT CARD",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-15",
+                    "date_posted": "2025-09-16",
+                    "amount": -60.00,
+                    "description": "SIDE JOB PAYMENT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-12",
+                    "date_posted": "2025-09-13",
+                    "amount": 1920.00,
+                    "description": "NFT MARKETPLACE PURCHASE",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-09",
+                    "date_posted": "2025-09-10",
+                    "amount": 2450.00,
+                    "description": "GAMBLING PLATFORM WITHDRAWAL",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-06",
+                    "date_posted": "2025-09-07",
+                    "amount": -50.00,
+                    "description": "RANDOM CASH DEPOSIT",
+                    "currency": "USD"
+                },
+                {
+                    "date_transacted": "2025-09-03",
+                    "date_posted": "2025-09-04",
+                    "amount": 1650.00,
+                    "description": "ONLINE CASINO CHIPS",
+                    "currency": "USD"
+                }
+            ],
+            "identity": {
+                "names": [
+                    "Marcus Risky"
+                ],
+                "addresses": [
+                    {
+                        "primary": true,
+                        "data": {
+                            "country": "US",
+                            "city": "Las Vegas",
+                            "street": "777 Lucky Lane",
+                            "postal_code": "89101",
+                            "region": "NV"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
