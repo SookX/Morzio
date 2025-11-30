@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morzio | AI-Powered BNPL Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Smooth scrolling for anchor links */
+        html { scroll-behavior: smooth; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased selection:bg-gray-900 selection:text-white">
+
+    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-2">
+                    <div class="bg-gray-900 text-white p-1.5 rounded-lg font-bold text-xl">M</div>
+                    <span class="font-bold text-xl tracking-tight">Morzio</span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-600">
+                    <a href="#how-it-works" class="hover:text-gray-900 transition">How it Works</a>
+                    <a href="#merchants" class="hover:text-gray-900 transition">For Merchants</a>
+                    <a href="#features" class="hover:text-gray-900 transition">Features</a>
+                </div>
+                <button class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-full text-sm font-medium transition shadow-lg shadow-gray-900/20">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                
+                <div class="text-center lg:text-left">
+                    <div th:if="${paymentMessage}" class="inline-block mb-6 px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-medium animate-pulse">
+                        <span th:text="${paymentMessage}"></span>
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-gray-900">
+                        Buy Now, <br>
+                        <span class="text-gray-500">Pay Smarter.</span>
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                        The AI-powered BNPL platform. We use open banking and Variational Autoencoders to provide instant, inclusive credit decisions without traditional credit checks.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <button class="bg-gray-900 text-white px-8 py-3.5 rounded-full font-medium hover:bg-gray-800 transition shadow-xl shadow-gray-900/10">
+                            Partner with Us
+                        </button>
+                        <button class="bg-white text-gray-900 border border-gray-200 px-8 py-3.5 rounded-full font-medium hover:bg-gray-50 transition">
+                            See How It Works
+                        </button>
+                    </div>
+                    <p class="mt-6 text-xs text-gray-400">Powered by Plaid & Open Banking</p>
+                </div>
+
+                <div class="relative flex justify-center lg:justify-end">
+                    <div class="absolute top-0 right-10 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+                    <div class="absolute bottom-0 left-10 w-72 h-72 bg-gray-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+
+                    <div class="relative bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-xs border border-gray-100">
+                        <div class="flex justify-center mb-6">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-gray-900 text-white p-1 rounded font-bold text-xs">M</div>
+                                <span class="font-bold text-lg">Morzio</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mb-8">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Total Amount</p>
+                            <p class="text-5xl font-bold text-gray-900">€ 35.78</p>
+                        </div>
+
+                        <div class="flex justify-center mb-6">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 text-[10px] font-medium text-gray-500">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                Secure Payment Session
+                            </span>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition cursor-pointer group">
+                                <input type="checkbox" class="mt-1 w-4 h-4 text-gray-900 rounded border-gray-300 focus:ring-gray-900">
+                                <span class="text-xs text-gray-500 group-hover:text-gray-700 transition">
+                                    I agree to the <span class="font-bold text-gray-900">Terms & Conditions</span> and AI-driven affordability check.
+                                </span>
+                            </label>
+                        </div>
+
+                        <button class="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                            Pay Now 
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                        
+                        <div class="mt-6 text-center">
+                            <p class="text-[10px] text-gray-300">Secured by Morzio</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="border-y border-gray-200 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div class="p-4">
+                    <p class="text-4xl font-bold text-gray-900 mb-2">4-48</p>
+                    <p class="text-sm text-gray-500 font-medium uppercase tracking-wide">Weekly Installments</p>
+                </div>
+                <div class="p-4">
+                    <p class="text-4xl font-bold text-gray-900 mb-2">30-40%</p>
+                    <p class="text-sm text-gray-500 font-medium uppercase tracking-wide">Increase in Conversion</p>
+                </div>
+                <div class="p-4">
+                    <p class="text-4xl font-bold text-gray-900 mb-2">&lt; 1 sec</p>
+                    <p class="text-sm text-gray-500 font-medium uppercase tracking-wide">AI Decision Speed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">The Technology</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Smart decisions in seconds.</h3>
+                <p class="text-gray-600">Unlike legacy BNPL, we use real-time data to personalize plans based on actual financial health.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-6 text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold mb-2">Checkout</h4>
+                    <p class="text-sm text-gray-600">Customer selects "Pay Later with Morzio" at online or in-store POS.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-6 text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold mb-2">Open Banking</h4>
+                    <p class="text-sm text-gray-600">We securely connect via Plaid to analyze 90 days of real transaction history.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-6 text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold mb-2">AI Engine</h4>
+                    <p class="text-sm text-gray-600">Our VAE model detects anomalies and affordability to generate a risk score instantly.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-6 text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold mb-2">Approval</h4>
+                    <p class="text-sm text-gray-600">Customer gets a personalized plan (e.g., 12 weeks). Merchant gets paid upfront.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="merchants" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Built for Growth,<br>Designed for Safety.</h2>
+                    <div class="space-y-8">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Higher Conversion Rates</h3>
+                                <p class="text-sm text-gray-600 mt-1">Merchants see up to 40% increase in checkout conversions by offering flexible terms.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Risk-Free Payments</h3>
+                                <p class="text-sm text-gray-600 mt-1">Morzio pays the merchant immediately. We handle the collection and credit risk.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Simple B2B Pricing</h3>
+                                <p class="text-sm text-gray-600 mt-1">Transparent merchant transaction fees. No hidden costs. Monetization aligned with your success.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-10">
+                        <a href="#" class="text-gray-900 font-bold border-b-2 border-gray-900 pb-1 hover:text-gray-600 hover:border-gray-600 transition">View Merchant Documentation &rarr;</a>
+                    </div>
+                </div>
+                
+                <div class="relative bg-gray-900 rounded-3xl p-8 lg:p-12 text-white overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-gray-700 rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
+                    <h3 class="text-2xl font-bold mb-6">Integration is simple.</h3>
+                    <div class="space-y-4 font-mono text-sm bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <div class="flex gap-2">
+                            <span class="text-purple-400">const</span>
+                            <span class="text-blue-300">checkout</span>
+                            <span class="text-gray-400">=</span>
+                            <span class="text-yellow-300">new</span>
+                            <span class="text-white">MorzioPayment({</span>
+                        </div>
+                        <div class="pl-4 text-gray-300">
+                            merchantId: <span class="text-green-400">'YOUR_ID'</span>,
+                        </div>
+                        <div class="pl-4 text-gray-300">
+                            amount: <span class="text-purple-400">35.78</span>,
+                        </div>
+                        <div class="pl-4 text-gray-300">
+                            currency: <span class="text-green-400">'EUR'</span>
+                        </div>
+                        <div class="text-white">});</div>
+                        <div class="text-gray-500">// Integrated in minutes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-white border-t border-gray-100 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="bg-gray-900 text-white p-1 rounded font-bold text-sm">M</div>
+                        <span class="font-bold text-lg">Morzio</span>
+                    </div>
+                    <p class="text-sm text-gray-500 max-w-xs">
+                        The next generation of responsible lending. AI-driven, inclusive, and instant.
+                    </p>
+                </div>
+                <div>
+                    <h5 class="font-bold text-gray-900 mb-4">Product</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-gray-900">For Merchants</a></li>
+                        <li><a href="#" class="hover:text-gray-900">For Consumers</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Developers (API)</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-gray-900 mb-4">Company</h5>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-gray-900">About Us</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Careers</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-12 pt-8 border-t border-gray-100 text-center md:text-left text-sm text-gray-400">
+                &copy; 2025 Morzio Inc. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
