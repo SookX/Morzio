@@ -88,6 +88,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.plaid</groupId>
+			<artifactId>plaid-java</artifactId>
+			<version>38.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
