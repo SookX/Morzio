@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class SelectPlanRequestDto {
     private String sessionId;
     private Double downPaymentAmount;
+    private Integer installments;
 }

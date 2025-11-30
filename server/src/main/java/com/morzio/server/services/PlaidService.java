@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import java.util.Collections;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 public class PlaidService {
@@ -116,12 +118,16 @@ public class PlaidService {
                 String recipientId = recipientResponse.body().getRecipientId();
 
                 // 2. Create Payment
+                double value = BigDecimal.valueOf(amount)
+                                .setScale(2, RoundingMode.HALF_UP)
+                                .doubleValue();
+
                 PaymentInitiationPaymentCreateRequest paymentRequest = new PaymentInitiationPaymentCreateRequest()
                                 .recipientId(recipientId)
                                 .reference("Morzio Payment")
                                 .amount(new PaymentAmount()
                                                 .currency(PaymentAmountCurrency.EUR)
-                                                .value(amount * 100));
+                                                .value(value));
 
                 Response<PaymentInitiationPaymentCreateResponse> paymentResponse = plaidApi
                                 .paymentInitiationPaymentCreate(paymentRequest).execute();

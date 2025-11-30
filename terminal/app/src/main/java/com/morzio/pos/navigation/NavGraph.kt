@@ -31,13 +31,24 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable("success") {
-            SuccessScreen()
+            SuccessScreen(onHomeClick = {
+                navController.navigate("amount") {
+                    popUpTo("amount") { inclusive = true }
+                }
+            })
         }
         composable(
             "error/{message}",
             arguments = listOf(navArgument("message") { type = NavType.StringType })
         ) {
-            ErrorScreen(message = it.arguments?.getString("message"))
+            ErrorScreen(
+                message = it.arguments?.getString("message"),
+                onHomeClick = {
+                    navController.navigate("amount") {
+                        popUpTo("amount") { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

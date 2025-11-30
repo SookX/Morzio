@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class PaymentServiceDto {
     private UUID id;
     private String status;
-    private Long amount;    
+    private Long amount;
     private Timestamp created;
 }

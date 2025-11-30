@@ -25,7 +25,11 @@ import com.morzio.server.dtos.PlaidService.SelectPlanRequestDto;
 import com.morzio.server.dtos.PlaidService.SelectPlanResponseDto;
 import com.morzio.server.dtos.PlaidService.TransactionDto;
 import com.morzio.server.entities.PaymentSession;
+import com.morzio.server.entities.Installment;
+import com.morzio.server.entities.InstallmentPlan;
 import com.morzio.server.repositorys.PaymentSessionRepository;
+import com.morzio.server.repositorys.Installments;
+import com.morzio.server.repositorys.InstallmentsPlanRepository;
 import com.morzio.server.services.MLService;
 import com.morzio.server.services.PlaidService;
 import com.plaid.client.model.AccountsGetResponse;
@@ -46,6 +50,12 @@ public class PlaidApiController {
 
         @Autowired
         private PaymentSessionRepository paymentSessionRepository;
+
+        @Autowired
+        private Installments installmentsRepository;
+
+        @Autowired
+        private InstallmentsPlanRepository installmentPlanRepository;
 
         /**
          * Handles the Plaid Link success callback
@@ -169,36 +179,89 @@ public class PlaidApiController {
                                                                 "Valid down payment amount is required"));
                         }
 
-                        logger.info("Processing select plan for session: {}, Amount: €{}",
-                                        request.getSessionId(), request.getDownPaymentAmount());
+                        if (request.getInstallments() == null || request.getInstallments() <= 0) {
+                                return ResponseEntity.badRequest().body(
+                                                new SelectPlanResponseDto(false, null,
+                                                                "Valid number of installments is required"));
+                        }
 
-                        // Initiate payment
-                        String paymentId = plaidService.initiatePayment(request.getDownPaymentAmount());
-                        logger.info("Payment initiated successfully. Payment ID: {}", paymentId);
+                        logger.info("Processing select plan for session: {}, Amount: €{}, Installments: {}",
+                                        request.getSessionId(), request.getDownPaymentAmount(),
+                                        request.getInstallments());
 
-                        // Update session status
+                        // Retrieve session first
+                        UUID sessionUuid;
                         try {
-                                UUID sessionUuid = UUID.fromString(request.getSessionId());
-                                Optional<PaymentSession> sessionOpt = paymentSessionRepository.findById(sessionUuid);
-
-                                if (sessionOpt.isPresent()) {
-                                        PaymentSession session = sessionOpt.get();
-                                        session.setStatus("COMPLETED");
-                                        paymentSessionRepository.save(session);
-                                        logger.info("Session {} status updated to COMPLETED", request.getSessionId());
-                                } else {
-                                        logger.warn("Session {} not found", request.getSessionId());
-                                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                                                        new SelectPlanResponseDto(false, null, "Session not found"));
-                                }
+                                sessionUuid = UUID.fromString(request.getSessionId());
                         } catch (IllegalArgumentException e) {
                                 logger.error("Invalid UUID format: {}", request.getSessionId());
                                 return ResponseEntity.badRequest().body(
                                                 new SelectPlanResponseDto(false, null, "Invalid Session ID format"));
                         }
 
+                        Optional<PaymentSession> sessionOpt = paymentSessionRepository.findById(sessionUuid);
+                        if (!sessionOpt.isPresent()) {
+                                logger.warn("Session {} not found", request.getSessionId());
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                                new SelectPlanResponseDto(false, null, "Session not found"));
+                        }
+                        PaymentSession session = sessionOpt.get();
+
+                        // Check if plan already exists
+                        if (installmentPlanRepository.findByPaymentSession(session).isPresent()) {
+                                logger.warn("Installment plan already exists for session {}", request.getSessionId());
+                                return ResponseEntity.badRequest().body(
+                                                new SelectPlanResponseDto(false, null,
+                                                                "Installment plan already exists for this session"));
+                        }
+
+                        // Create Installment Plan
+                        InstallmentPlan plan = new InstallmentPlan();
+                        plan.setInstallmentCount((long) request.getInstallments());
+                        plan.setTotalAmount(session.getAmount());
+                        plan.setPaymentSession(session);
+                        plan.setInterestRate(0L);
+
+                        long amountPerInstallment = session.getAmount() / request.getInstallments();
+                        plan.setAmountPerInstallment(amountPerInstallment);
+
+                        installmentPlanRepository.save(plan);
+
+                        // Create Installments
+                        List<Installment> installmentList = new ArrayList<>();
+                        long remainder = session.getAmount() % request.getInstallments();
+
+                        for (int i = 0; i < request.getInstallments(); i++) {
+                                Installment installment = new Installment();
+                                installment.setAmount(amountPerInstallment);
+                                if (i == 0 && remainder > 0) {
+                                        installment.setAmount(amountPerInstallment + remainder);
+                                }
+                                installment.setStatus("PENDING");
+                                installment.setInstallmentPlan(plan);
+                                installmentList.add(installment);
+                        }
+
+                        installmentsRepository.saveAll(installmentList);
+
+                        // Initiate payment
+                        String paymentId = plaidService.initiatePayment(request.getDownPaymentAmount());
+                        logger.info("Payment initiated successfully. Payment ID: {}", paymentId);
+
+                        // Mark first installment as completed
+                        if (!installmentList.isEmpty()) {
+                                Installment firstInstallment = installmentList.get(0);
+                                firstInstallment.setStatus("COMPLETED");
+                                installmentsRepository.save(firstInstallment);
+                        }
+
+                        // Update session status
+                        session.setStatus("COMPLETED");
+                        paymentSessionRepository.save(session);
+                        logger.info("Session {} status updated to COMPLETED", request.getSessionId());
+
                         return ResponseEntity.ok(new SelectPlanResponseDto(true, paymentId,
-                                        "Payment initiated and session updated"));
+                                        "Payment initiated, plan created, and session updated"));
 
                 } catch (IOException e) {
                         logger.error("IOException while initiating payment: {}", e.getMessage(), e);
@@ -299,15 +362,19 @@ public class PlaidApiController {
 
                 for (int installments : installmentOptions) {
                         if (installments <= maxInstallments) {
-                                double monthlyPayment = Math.round(amount / installments * 100.0) / 100.0;
-                                plans.add(new InstallmentPlanDto(
-                                                installments,
-                                                monthlyPayment,
-                                                "Pay in " + installments));
+                                long totalCents = Math.round(amount * 100);
+                                long part = totalCents / installments;
+                                long remainder = totalCents % installments;
+                                double monthlyPayment = (part + remainder) / 100.0;
+                                if (monthlyPayment >= 1.00) {
+                                        plans.add(new InstallmentPlanDto(
+                                                        installments,
+                                                        monthlyPayment,
+                                                        "Pay in " + installments));
+                                }
                         }
                 }
 
                 return plans;
         }
 }
-

@@ -1,7 +1,8 @@
 package com.morzio.server.entities;
 
-
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -11,7 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-
 @Entity
 @Table(name = "installment")
 @Data
@@ -19,12 +19,13 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class Installment {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     private Long amount;
 
     private String status;
-    
+
     @ManyToOne
     @JoinColumn(name = "installment_plan_id")
     private InstallmentPlan installmentPlan;

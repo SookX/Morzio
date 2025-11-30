@@ -65,14 +65,38 @@ class QRCodeViewModel : ViewModel() {
     private fun startPolling() {
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch {
-            delay(5000) // 5s
-            _uiState.update { it.copy(status = PaymentStatus.MANDATE_PENDING) }
-            delay(5000) // 10s
-            _uiState.update { it.copy(status = PaymentStatus.AI_EVALUATION) }
-            delay(5000) // 15s
-            _uiState.update { it.copy(status = PaymentStatus.INSTALLMENT_PENDING) }
-            delay(6000) // 21s
-            _uiState.update { it.copy(status = PaymentStatus.COMPLETED) }
+            while (true) {
+                delay(2000) // Poll every 2 seconds
+                try {
+                    val currentSessionId = _uiState.value.sessionId
+                    if (currentSessionId.isNotEmpty()) {
+                        val response = com.morzio.pos.data.api.NetworkModule.api.checkPaymentStatus(currentSessionId)
+                        if (response.isSuccessful && response.body() != null) {
+                            val status = response.body()!!.status
+                            when (status) {
+                                "COMPLETED" -> {
+                                    _uiState.update { it.copy(status = PaymentStatus.COMPLETED) }
+                                    pollingJob?.cancel()
+                                    timerJob?.cancel()
+                                    return@launch
+                                }
+                                "FAILED" -> {
+                                    _uiState.update { it.copy(status = PaymentStatus.ERROR) }
+                                    pollingJob?.cancel()
+                                    timerJob?.cancel()
+                                    return@launch
+                                }
+                                else -> {
+                                    // Keep waiting
+                                    // You might want to map other backend statuses to UI statuses here if needed
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
