@@ -98,6 +98,37 @@ async def predict(request: PredictRequest):
         current_txn_mcc=request.transaction_mcc,
     )
 
+    # Log feature vector for debugging
+    feature_names = [
+        "estimated_monthly_income",
+        "last_inflow_amount",
+        "days_since_last_inflow",
+        "credit_score",
+        "total_spend_30d",
+        "total_spend_90d",
+        "transaction_count_30d",
+        "transaction_count_90d",
+        "avg_txn_amount_30d",
+        "avg_txn_amount_90d",
+        "max_txn_amount_90d",
+        "txn_amount_median_90d",
+        "spend_volatility_30d",
+        "spend_volatility_90d",
+        "spend_to_income_ratio_30d",
+        "spend_to_income_ratio_90d",
+        "avg_txn_over_income_ratio_90d",
+        "txn_count_30d_norm",
+        "current_txn_amount",
+        "current_txn_mcc"
+    ]
+    
+    print("\n" + "=" * 80)
+    print("FEATURE VECTOR TRANSFORMATION")
+    print("=" * 80)
+    for name, value in zip(feature_names, feature_vector):
+        print(f"{name:35s}: {value:>15.4f}")
+    print("=" * 80 + "\n")
+
     dataset = ml_pipeline["dataset"]
     scaler_stats = ml_pipeline["scaler_stats"]
     vae = ml_pipeline["vae"]
@@ -108,11 +139,35 @@ async def predict(request: PredictRequest):
 
     anomaly_score = decision["score"]
     estimated_monthly_income = feature_vector[0]
+    
+    epsilon_value = decision.get('epsilon', None)
+    epsilon_display = f"{epsilon_value:>15.4f}" if epsilon_value is not None else f"{'N/A':>15s}"
+    
+    print("=" * 80)
+    print("ANOMALY DETECTION RESULT")
+    print("=" * 80)
+    print(f"Anomaly Score:                      {anomaly_score:>15.4f}")
+    print(f"Risk Level:                         {decision['risk']:>15s}")
+    print(f"Reconstruction Error:               {decision['reconstruction_error']:>15.4f}")
+    print(f"KL Divergence:                      {decision['kl_divergence']:>15.4f}")
+    print(f"Normalized Score (epsilon):         {epsilon_display}")
+    print("=" * 80 + "\n")
+    
     n = max_installments(
         monthly_income=estimated_monthly_income,
         transaction_amount=request.transaction_amount,
         anomaly_score=anomaly_score
     )
+    
+    print("=" * 80)
+    print("INSTALLMENT CALCULATION")
+    print("=" * 80)
+    print(f"Monthly Income:                     £{estimated_monthly_income:>14.2f}")
+    print(f"Transaction Amount:                 £{request.transaction_amount:>14.2f}")
+    print(f"Affordability Ratio:                 {abs(request.transaction_amount) / (estimated_monthly_income + 1):>15.4f}")
+    print(f"Final Installments:                  {n:>15d}")
+    print(f"Decision:                           {'APPROVED' if n > 0 else 'DECLINED':>15s}")
+    print("=" * 80 + "\n")
 
     return PredictResponse(
         approved=n > 0,
