@@ -1,6 +1,7 @@
 package com.morzio.server.services.PaymentService.PaymentServiceImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.morzio.server.dtos.PaymentService.PaymentInitiateResponseDto;
@@ -19,12 +20,15 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     PaymentSessionMapper paymentSessionMapper;
 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
+
     @Override
     public PaymentInitiateResponseDto url_for_qr(Long amount) {
 
         PaymentServiceDto paymentServiceDto = createPaymentService(amount);
 
-        String baseUrl = "http://morzio.com/pay/";
+        String baseUrl = appBaseUrl + "/pay/";
         String urlWithSessionId = baseUrl + paymentServiceDto.getId().toString();
 
         PaymentInitiateResponseDto response = new PaymentInitiateResponseDto();

@@ -1,20 +1,12 @@
 package com.morzio.server.controllers.PlaidController;
 
-import com.morzio.server.dtos.PlaidService.InstallmentPlanDto;
-import com.morzio.server.dtos.PlaidService.PlaidOnSuccessRequestDto;
-import com.morzio.server.dtos.PlaidService.PlaidOnSuccessResponseDto;
-import com.morzio.server.dtos.PlaidService.TransactionDto;
-import com.morzio.server.services.PlaidService;
-import com.plaid.client.model.AccountBase;
-import com.plaid.client.model.AccountsGetResponse;
-import com.plaid.client.model.Transaction;
-import com.plaid.client.model.TransactionsGetResponse;
-import com.morzio.server.dtos.PlaidService.SelectPlanRequestDto;
-import com.morzio.server.dtos.PlaidService.SelectPlanResponseDto;
-import com.morzio.server.repositorys.PaymentSessionRepository;
-import com.morzio.server.entities.PaymentSession;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +17,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.morzio.server.dtos.PlaidService.InstallmentPlanDto;
+import com.morzio.server.dtos.PlaidService.MLResponseDto;
+import com.morzio.server.dtos.PlaidService.PlaidOnSuccessRequestDto;
+import com.morzio.server.dtos.PlaidService.PlaidOnSuccessResponseDto;
+import com.morzio.server.dtos.PlaidService.SelectPlanRequestDto;
+import com.morzio.server.dtos.PlaidService.SelectPlanResponseDto;
+import com.morzio.server.dtos.PlaidService.TransactionDto;
+import com.morzio.server.entities.PaymentSession;
+import com.morzio.server.repositorys.PaymentSessionRepository;
+import com.morzio.server.services.MLService;
+import com.morzio.server.services.PlaidService;
+import com.plaid.client.model.AccountsGetResponse;
+import com.plaid.client.model.Transaction;
+import com.plaid.client.model.TransactionsGetResponse;
 
 @RestController
 @RequestMapping("/api/plaid")
@@ -38,6 +40,9 @@ public class PlaidApiController {
 
         @Autowired
         private PlaidService plaidService;
+
+        @Autowired
+        private MLService mlService;
 
         @Autowired
         private PaymentSessionRepository paymentSessionRepository;
@@ -87,31 +92,32 @@ public class PlaidApiController {
                         // Log all transactions
                         logTransactions(transactionDtos);
 
-                        // Step 4: Mock risk logic - check if account balance > transaction amount
-                        Double totalBalance = calculateTotalBalance(accountsResponse.getAccounts());
+                        // Step 4: Call ML service for real risk assessment
                         Double transactionAmount = request.getTransactionAmount();
-
-                        logger.info("Total available balance: €{}, Transaction amount: €{}", totalBalance,
+                        logger.info("Calling ML service for risk assessment. Transaction amount: £{}",
                                         transactionAmount);
 
-                        if (totalBalance >= transactionAmount) {
-                                // User has sufficient balance - return installment plan options
-                                List<InstallmentPlanDto> installmentPlans = generateInstallmentPlans(transactionAmount);
+                        MLResponseDto mlResponse = mlService.predict(transactionDtos, transactionAmount);
 
-                                logger.info("Risk check PASSED - Offering {} installment plan options",
-                                                installmentPlans.size());
+                        if (mlResponse.isApproved() && mlResponse.getMax_installments() > 0) {
+                                // ML approved - generate installment plans up to max allowed
+                                List<InstallmentPlanDto> installmentPlans = generateInstallmentPlans(
+                                                transactionAmount, mlResponse.getMax_installments());
+
+                                logger.info("ML APPROVED - Max installments: {}, Offering {} plan options",
+                                                mlResponse.getMax_installments(), installmentPlans.size());
 
                                 return ResponseEntity.ok(
                                                 new PlaidOnSuccessResponseDto(
                                                                 true,
-                                                                "Installment plans available",
+                                                                "Installment plans available (ML approved)",
                                                                 installmentPlans,
                                                                 transactionDtos,
                                                                 null));
                         } else {
-                                // Insufficient balance
-                                logger.warn("Risk check FAILED - Insufficient balance. Available: €{}, Required: €{}",
-                                                totalBalance, transactionAmount);
+                                // ML declined
+                                logger.warn("ML DECLINED - Risk assessment failed for transaction amount: £{}",
+                                                transactionAmount);
 
                                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(
                                                 new PlaidOnSuccessResponseDto(
@@ -119,8 +125,7 @@ public class PlaidApiController {
                                                                 null,
                                                                 null,
                                                                 transactionDtos,
-                                                                String.format("Insufficient balance. Available: €%.2f, Required: €%.2f",
-                                                                                totalBalance, transactionAmount)));
+                                                                "Payment declined based on risk assessment"));
                         }
 
                 } catch (IOException e) {
@@ -273,46 +278,36 @@ public class PlaidApiController {
         }
 
         /**
-         * Calculate total available balance across all accounts
+         * Generate installment plan options based on ML-approved max installments
+         * Plans are offered in multiples of 4 up to the max allowed
          *
-         * @param accounts List of account balances from Plaid
-         * @return Total available balance
-         */
-        private Double calculateTotalBalance(List<AccountBase> accounts) {
-                return accounts.stream()
-                                .filter(account -> account.getBalances() != null
-                                                && account.getBalances().getAvailable() != null)
-                                .mapToDouble(account -> account.getBalances().getAvailable())
-                                .sum();
-        }
-
-        /**
-         * Generate installment plan options: Pay in 1, Pay in 3, Pay in 6
-         *
-         * @param amount Transaction amount
+         * @param amount          Transaction amount
+         * @param maxInstallments Maximum installments approved by ML (4-48)
          * @return List of installment plan options
          */
-        private List<InstallmentPlanDto> generateInstallmentPlans(Double amount) {
+        private List<InstallmentPlanDto> generateInstallmentPlans(Double amount, int maxInstallments) {
                 List<InstallmentPlanDto> plans = new ArrayList<>();
 
-                // Pay in 1 (full amount)
+                // Always offer Pay in Full
                 plans.add(new InstallmentPlanDto(
                                 1,
                                 amount,
-                                "Pay in 1"));
+                                "Pay in Full"));
 
-                // Pay in 3
-                plans.add(new InstallmentPlanDto(
-                                3,
-                                Math.round(amount / 3 * 100.0) / 100.0,
-                                "Pay in 3"));
+                // Offer plans in multiples of 4 up to maxInstallments
+                int[] installmentOptions = { 4, 8, 12, 16, 24, 36, 48 };
 
-                // Pay in 6
-                plans.add(new InstallmentPlanDto(
-                                6,
-                                Math.round(amount / 6 * 100.0) / 100.0,
-                                "Pay in 6"));
+                for (int installments : installmentOptions) {
+                        if (installments <= maxInstallments) {
+                                double monthlyPayment = Math.round(amount / installments * 100.0) / 100.0;
+                                plans.add(new InstallmentPlanDto(
+                                                installments,
+                                                monthlyPayment,
+                                                "Pay in " + installments));
+                        }
+                }
 
                 return plans;
         }
 }
+
