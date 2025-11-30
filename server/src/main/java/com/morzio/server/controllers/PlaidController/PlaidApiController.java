@@ -67,7 +67,7 @@ public class PlaidApiController {
                                                                 "Valid transaction amount is required"));
                         }
 
-                        logger.info("Processing Plaid success callback for transaction amount: £{}",
+                        logger.info("Processing Plaid success callback for transaction amount: €{}",
                                         request.getTransactionAmount());
 
                         // Step 1: Exchange public token for access token
@@ -91,7 +91,7 @@ public class PlaidApiController {
                         Double totalBalance = calculateTotalBalance(accountsResponse.getAccounts());
                         Double transactionAmount = request.getTransactionAmount();
 
-                        logger.info("Total available balance: £{}, Transaction amount: £{}", totalBalance,
+                        logger.info("Total available balance: €{}, Transaction amount: €{}", totalBalance,
                                         transactionAmount);
 
                         if (totalBalance >= transactionAmount) {
@@ -110,7 +110,7 @@ public class PlaidApiController {
                                                                 null));
                         } else {
                                 // Insufficient balance
-                                logger.warn("Risk check FAILED - Insufficient balance. Available: £{}, Required: £{}",
+                                logger.warn("Risk check FAILED - Insufficient balance. Available: €{}, Required: €{}",
                                                 totalBalance, transactionAmount);
 
                                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(
@@ -119,7 +119,7 @@ public class PlaidApiController {
                                                                 null,
                                                                 null,
                                                                 transactionDtos,
-                                                                String.format("Insufficient balance. Available: £%.2f, Required: £%.2f",
+                                                                String.format("Insufficient balance. Available: €%.2f, Required: €%.2f",
                                                                                 totalBalance, transactionAmount)));
                         }
 
@@ -164,7 +164,7 @@ public class PlaidApiController {
                                                                 "Valid down payment amount is required"));
                         }
 
-                        logger.info("Processing select plan for session: {}, Amount: £{}",
+                        logger.info("Processing select plan for session: {}, Amount: €{}",
                                         request.getSessionId(), request.getDownPaymentAmount());
 
                         // Initiate payment
@@ -243,7 +243,7 @@ public class PlaidApiController {
                 } else {
                         for (int i = 0; i < transactions.size(); i++) {
                                 TransactionDto tx = transactions.get(i);
-                                logger.info("Transaction #{}: {} | Amount: £{} | Date: {} | Merchant: {} | Category: {} | Pending: {}",
+                                logger.info("Transaction #{}: {} | Amount: €{} | Date: {} | Merchant: {} | Category: {} | Pending: {}",
                                                 i + 1,
                                                 tx.getName(),
                                                 tx.getAmount(),
@@ -265,9 +265,9 @@ public class PlaidApiController {
                                         .sum();
 
                         logger.info("==================== TRANSACTION SUMMARY ====================");
-                        logger.info("Total Spent: £{}", totalSpent);
-                        logger.info("Total Income: £{}", Math.abs(totalIncome));
-                        logger.info("Net: £{}", totalIncome + totalSpent);
+                        logger.info("Total Spent: €{}", totalSpent);
+                        logger.info("Total Income: €{}", Math.abs(totalIncome));
+                        logger.info("Net: €{}", totalIncome + totalSpent);
                 }
                 logger.info("=============================================================");
         }

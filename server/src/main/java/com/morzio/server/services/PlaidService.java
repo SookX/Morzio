@@ -94,18 +94,14 @@ public class PlaidService {
 
         public String initiatePayment(Double amount) throws IOException {
                 // 1. Create Recipient (Sandbox)
-                RecipientBACSNullable bacs = new RecipientBACSNullable()
-                                .account("12345678")
-                                .sortCode("102030");
-
                 PaymentInitiationRecipientCreateRequest recipientRequest = new PaymentInitiationRecipientCreateRequest()
                                 .name("Morzio Sandbox Recipient")
-                                .bacs(bacs)
+                                .iban("DE89370400440532013000") // Sandbox IBAN (Germany)
                                 .address(new PaymentInitiationAddress()
-                                                .street(Collections.singletonList("123 Sandbox St"))
-                                                .city("London")
-                                                .postalCode("EC1A 1BB")
-                                                .country("GB"));
+                                                .street(Collections.singletonList("Teststrasse 1"))
+                                                .city("Berlin")
+                                                .postalCode("10115")
+                                                .country("DE"));
 
                 Response<PaymentInitiationRecipientCreateResponse> recipientResponse = plaidApi
                                 .paymentInitiationRecipientCreate(recipientRequest).execute();

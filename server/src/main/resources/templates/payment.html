@@ -63,7 +63,7 @@
             <div class="flex flex-col items-center justify-center my-12">
                 <p class="text-gray-400 text-xs font-semibold uppercase tracking-[0.2em] mb-6">Total Amount</p>
                 <div class="flex items-baseline relative">
-                    <span class="text-4xl font-medium text-gray-300 mr-2 absolute -left-8 top-2">$</span>
+                    <span class="text-4xl font-medium text-gray-300 mr-2 absolute -left-8 top-2">€</span>
                     <span class="text-7xl font-bold text-gray-900 tracking-tighter" th:text="${amount}">0.00</span>
                 </div>
                 <div class="mt-6 px-4 py-1.5 bg-gray-50/80 backdrop-blur-sm rounded-full border border-gray-100">
@@ -278,7 +278,7 @@
                                         </div>
                                         <div class="text-center">
                                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">${plan.label}</p>
-                                            <p class="text-3xl font-bold text-gray-900 mb-1">£${plan.amountPerInstallment.toFixed(2)}</p>
+                                            <p class="text-3xl font-bold text-gray-900 mb-1">€${plan.amountPerInstallment.toFixed(2)}</p>
                                             ${plan.installments > 1 ? `<p class="text-xs text-gray-500">per installment</p>` : `<p class="text-xs text-gray-500">one-time payment</p>`}
                                         </div>
                                     </div>
