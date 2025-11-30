@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.morzio.pos.models.PaymentStatus
 import com.morzio.pos.viewmodels.QRCodeViewModel
+import com.morzio.pos.LocalPrinterService
+import com.morzio.pos.utils.PrinterHelper
 
 @Composable
 fun QRCodeScreen(
@@ -59,6 +61,7 @@ fun QRCodeScreen(
 ) {
     val viewModel: QRCodeViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
+    val printerAccessor = LocalPrinterService.current
     var showCancelDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(amount) {
@@ -67,7 +70,19 @@ fun QRCodeScreen(
 
     LaunchedEffect(uiState.status) {
         when (uiState.status) {
-            PaymentStatus.COMPLETED -> onNavigateToSuccess()
+            PaymentStatus.COMPLETED -> {
+                printerAccessor?.getPrinterService()?.let { service ->
+                    PrinterHelper.printReceipt(
+                        printerService = service,
+                        amount = uiState.amount,
+                        sessionId = uiState.sessionId,
+                        status = "COMPLETED",
+                        paymentUrl = uiState.paymentUrl,
+                        installments = uiState.installments
+                    )
+                }
+                onNavigateToSuccess()
+            }
             PaymentStatus.TIMEOUT -> onNavigateToError("Transaction timed out")
             PaymentStatus.ERROR -> onNavigateToError("Transaction cancelled")
             else -> {}

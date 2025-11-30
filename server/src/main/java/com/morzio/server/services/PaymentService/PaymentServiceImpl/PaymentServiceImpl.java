@@ -10,6 +10,14 @@ import com.morzio.server.entities.PaymentSession;
 import com.morzio.server.mapper.PaymentSessionMapper;
 import com.morzio.server.repositorys.PaymentSessionRepository;
 import com.morzio.server.services.PaymentService.PaymentService;
+import com.morzio.server.repositorys.InstallmentsPlanRepository;
+import com.morzio.server.repositorys.Installments;
+import com.morzio.server.entities.InstallmentPlan;
+import com.morzio.server.entities.Installment;
+import com.morzio.server.dtos.PaymentService.InstallmentDto;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -19,6 +27,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     PaymentSessionMapper paymentSessionMapper;
+
+    @Autowired
+    InstallmentsPlanRepository installmentsPlanRepository;
+
+    @Autowired
+    Installments installmentsRepository;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
@@ -55,6 +69,23 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentServiceDto getPaymentSession(java.util.UUID id) {
         PaymentSession session = paymentSessionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment session not found"));
-        return paymentSessionMapper.toDto(session);
+
+        PaymentServiceDto dto = paymentSessionMapper.toDto(session);
+
+        Optional<InstallmentPlan> plan = installmentsPlanRepository.findByPaymentSessionId(id);
+        if (plan.isPresent()) {
+            List<Installment> installmentEntities = installmentsRepository.findByInstallmentPlanId(plan.get().getId());
+            List<InstallmentDto> installmentDtos = new java.util.ArrayList<>();
+            java.time.LocalDate startDate = java.time.LocalDate.now().plusMonths(1);
+
+            for (int i = 0; i < installmentEntities.size(); i++) {
+                Installment installment = installmentEntities.get(i);
+                String dueDate = startDate.plusMonths(i).toString();
+                installmentDtos.add(new InstallmentDto(installment.getAmount(), installment.getStatus(), dueDate));
+            }
+            dto.setInstallments(installmentDtos);
+        }
+
+        return dto;
     }
 }

@@ -9,5 +9,12 @@ data class PaymentInitiateRequest(
 data class PaymentInitiateResponse(
     @SerializedName("sessionId") val sessionId: String,
     @SerializedName("status") val status: String,
-    @SerializedName("paymentUrl") val paymentUrl: String
+    @SerializedName("paymentUrl") val paymentUrl: String,
+    @SerializedName("installments") val installments: List<InstallmentDto>?
+)
+
+data class InstallmentDto(
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("status") val status: String,
+    @SerializedName("dueDate") val dueDate: String
 )

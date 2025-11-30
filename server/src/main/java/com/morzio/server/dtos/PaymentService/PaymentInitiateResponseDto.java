@@ -13,4 +13,5 @@ public class PaymentInitiateResponseDto {
     private UUID sessionId;
     private String status;
     private String paymentUrl;
+    private java.util.List<InstallmentDto> installments;
 }

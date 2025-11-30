@@ -19,7 +19,9 @@ data class QRCodeState(
     val amount: Double = 0.0,
     val qrCodeBitmap: Bitmap? = null,
     val status: PaymentStatus = PaymentStatus.WAITING,
-    val timeElapsed: Int = 0
+    val timeElapsed: Int = 0,
+    val paymentUrl: String = "",
+    val installments: List<com.morzio.pos.data.api.InstallmentDto>? = null
 )
 
 class QRCodeViewModel : ViewModel() {
@@ -47,7 +49,8 @@ class QRCodeViewModel : ViewModel() {
                             amount = amount,
                             sessionId = body.sessionId,
                             qrCodeBitmap = QRCodeGenerator.generate(body.paymentUrl, 300, 300),
-                            status = PaymentStatus.WAITING
+                            status = PaymentStatus.WAITING,
+                            paymentUrl = body.paymentUrl
                         )
                     }
                     startPolling()
@@ -75,7 +78,12 @@ class QRCodeViewModel : ViewModel() {
                             val status = response.body()!!.status
                             when (status) {
                                 "COMPLETED" -> {
-                                    _uiState.update { it.copy(status = PaymentStatus.COMPLETED) }
+                                    _uiState.update { 
+                                        it.copy(
+                                            status = PaymentStatus.COMPLETED,
+                                            installments = response.body()!!.installments
+                                        ) 
+                                    }
                                     pollingJob?.cancel()
                                     timerJob?.cancel()
                                     return@launch

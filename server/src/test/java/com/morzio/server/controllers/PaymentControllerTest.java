@@ -41,8 +41,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(testAmount)).thenReturn(expectedResponse);
 
@@ -57,7 +57,7 @@ class PaymentControllerTest {
 
     @Test
     void testInitiatePayment_WithDifferentAmounts() {
-        Long[] amounts = {1L, 100L, 50000L, 999999L};
+        Long[] amounts = { 1L, 100L, 50000L, 999999L };
 
         for (Long amount : amounts) {
             PaymentInitiateRequestDto request = new PaymentInitiateRequestDto(amount);
@@ -65,8 +65,8 @@ class PaymentControllerTest {
             PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                     sessionId,
                     "PENDING",
-                    "http://morzio.com/pay/" + sessionId.toString()
-            );
+                    "http://morzio.com/pay/" + sessionId.toString(),
+                    null);
 
             when(paymentService.url_for_qr(amount)).thenReturn(expectedResponse);
 
@@ -84,8 +84,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(testAmount)).thenReturn(expectedResponse);
 
@@ -107,8 +107,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 UUID.randomUUID(),
                 "PENDING",
-                "http://morzio.com/pay/test"
-        );
+                "http://morzio.com/pay/test",
+                null);
 
         when(paymentService.url_for_qr(null)).thenReturn(expectedResponse);
 
@@ -125,8 +125,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 UUID.randomUUID(),
                 "PENDING",
-                "http://morzio.com/pay/test"
-        );
+                "http://morzio.com/pay/test",
+                null);
 
         when(paymentService.url_for_qr(amount)).thenReturn(expectedResponse);
 
@@ -143,8 +143,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(largeAmount)).thenReturn(expectedResponse);
 
@@ -161,8 +161,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(0L)).thenReturn(expectedResponse);
 
@@ -179,8 +179,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(negativeAmount)).thenReturn(expectedResponse);
 
@@ -197,8 +197,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                expectedUrl
-        );
+                expectedUrl,
+                null);
 
         when(paymentService.url_for_qr(testAmount)).thenReturn(expectedResponse);
 
@@ -213,8 +213,8 @@ class PaymentControllerTest {
         PaymentInitiateResponseDto expectedResponse = new PaymentInitiateResponseDto(
                 testSessionId,
                 "PENDING",
-                "http://morzio.com/pay/" + testSessionId.toString()
-        );
+                "http://morzio.com/pay/" + testSessionId.toString(),
+                null);
 
         when(paymentService.url_for_qr(request.getAmount())).thenReturn(expectedResponse);
 

@@ -42,6 +42,7 @@ public class PaymentController {
         PaymentInitiateResponseDto response = new PaymentInitiateResponseDto();
         response.setSessionId(dto.getId());
         response.setStatus(dto.getStatus());
+        response.setInstallments(dto.getInstallments());
         // We don't necessarily need the URL again, but we can set it if needed or leave
         // null
         return response;

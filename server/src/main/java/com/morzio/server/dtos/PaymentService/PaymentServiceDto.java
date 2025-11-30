@@ -15,4 +15,5 @@ public class PaymentServiceDto {
     private String status;
     private Long amount;
     private Timestamp created;
+    private java.util.List<InstallmentDto> installments;
 }
