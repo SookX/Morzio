@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class Decoder(nn.Module):
     def __init__(self, latent_dim, hidden_dim, output_dim):
         super(Decoder, self).__init__()
@@ -12,8 +13,6 @@ class Decoder(nn.Module):
 
     def forward(self, z):
         z = self.activation(self.fc1(z))
-        #z = self.dropout(z)
         z = self.activation(self.fc2(z))
-        #z = self.dropout(z)
         z = self.fc3(z)
         return z

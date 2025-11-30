@@ -13,13 +13,11 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "vae_annomaly_detection" / "
 
 
 def parse_currency_series(series: pd.Series) -> pd.Series:
-    """Convert currency strings like '$-77.00' to floats; invalid -> NaN."""
     cleaned = series.astype(str).str.replace(r"[^0-9.\-]", "", regex=True)
     return pd.to_numeric(cleaned, errors="coerce")
 
 
 def load_legit_tx_ids(labels_path: Path) -> set[int]:
-    """Return the set of transaction IDs labeled as legitimate ('No')."""
     with labels_path.open() as f:
         data = json.load(f)
     target = data.get("target", data)
@@ -40,7 +38,6 @@ def build_feature_vector(
 ) -> Dict[str, Any]:
     snap_dt = pd.to_datetime(snapshot_date)
 
-    # Load datasets
     tx_path = data_dir / "transactions_data.csv"
     user_path = data_dir / "users_data.csv"
     labels_path = data_dir / "train_fraud_labels.json"
@@ -49,16 +46,13 @@ def build_feature_vector(
     tx = pd.read_csv(tx_path, parse_dates=["date"])
     tx["amount_value"] = parse_currency_series(tx["amount"])
 
-    # Filter to legitimate transactions, client, and cutoff date
     tx = tx[tx["id"].isin(legit_ids)]
     tx = tx[(tx["client_id"] == client_id) & (tx["date"] <= snap_dt)]
 
-    # Split inflows/expenses
     inflows = tx[tx["amount_value"] > 0].copy()
     expenses = tx[tx["amount_value"] < 0].copy()
     expenses["spend"] = expenses["amount_value"].abs()
 
-    # User info
     user_df = pd.read_csv(user_path)
     user_row = user_df[user_df["id"] == client_id]
     yearly_income_value = parse_currency_series(user_row["yearly_income"]).iloc[0] if not user_row.empty else float("nan")
@@ -107,7 +101,6 @@ def build_feature_vector(
         start = snap_dt - pd.Timedelta(days=days)
         return df[df["date"] > start]
 
-    # Aggregations on expenses
     w30 = window(expense_df, 30) if not expense_df.empty else expense_df
     w90 = window(expense_df, 90) if not expense_df.empty else expense_df
 
@@ -155,19 +148,13 @@ def build_feature_vector(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build a single-client feature vector from legitimate expense transactions.")
-    parser.add_argument("--client-id", type=int, required=True, help="Client ID to build features for.")
-    parser.add_argument("--snapshot-date", type=str, required=True, help="ISO date (YYYY-MM-DD) cutoff (inclusive).")
-    parser.add_argument("--current-txn-amount", type=float, required=True, help="Current transaction amount (negative for expense).")
-    parser.add_argument("--current-txn-mcc", type=int, default=None, help="Optional MCC for the current transaction.")
-    parser.add_argument("--chunksize", type=int, default=200_000, help="CSV chunk size for streaming.")
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=Path,
-        default=None,
-        help="Where to write the feature vector JSON. Defaults to ml/dema_revenue/output/features_<client>.json.",
-    )
+    parser = argparse.ArgumentParser(description="Build a single-client feature vector.")
+    parser.add_argument("--client-id", type=int, required=True)
+    parser.add_argument("--snapshot-date", type=str, required=True)
+    parser.add_argument("--current-txn-amount", type=float, required=True)
+    parser.add_argument("--current-txn-mcc", type=int, default=None)
+    parser.add_argument("--chunksize", type=int, default=200_000)
+    parser.add_argument("--output", "-o", type=Path, default=None)
     args = parser.parse_args()
 
     features = build_feature_vector(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,6 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "vae_annomaly_detection" / "
 
 
 def parse_currency_series(series: pd.Series) -> pd.Series:
-    """Convert currency strings like '$-77.00' to floats; invalid -> NaN."""
     cleaned = series.astype(str).str.replace(r"[^0-9.\-]", "", regex=True)
     return pd.to_numeric(cleaned, errors="coerce")
 
@@ -23,7 +22,6 @@ def safe_div(num: float, denom: float) -> float:
 
 
 def load_legit_tx_ids(labels_path: Path) -> set[int]:
-    """Return the set of transaction IDs labeled as legitimate ('No')."""
     with labels_path.open() as f:
         data = json.load(f)
     target = data.get("target", data)
@@ -36,10 +34,6 @@ def aggregate_client_expenses(
     chunksize: int,
     client_ids: set[int],
 ) -> Dict[int, Dict[str, list]]:
-    """
-    Stream legitimate transactions and collect full time series per client.
-    Returns a dict mapping client_id -> {"dates": [...], "amounts": [...], "mcc": [...]}
-    """
     cols = ["id", "date", "client_id", "amount", "mcc"]
     dtypes = {
         "id": "int64",
@@ -80,7 +74,6 @@ def summarize_features_sliding(
     window_days: int = 90,
     stride_days: int = 91,
 ) -> List[Dict[str, any]]:
-    """Compute feature rows for each client across sliding snapshots."""
     user_df = user_df.set_index("id")
     rows: List[Dict[str, any]] = []
     window_delta = pd.Timedelta(days=window_days)
@@ -90,7 +83,6 @@ def summarize_features_sliding(
         if rec is None or not rec["dates"]:
             continue
 
-        # Sort by date and keep amounts/mcc aligned
         df_rec = pd.DataFrame(
             {
                 "date": pd.to_datetime(rec["dates"]),
@@ -102,14 +94,12 @@ def summarize_features_sliding(
             continue
         dates = df_rec["date"]
         amounts = df_rec["amount"]
-        mccs = df_rec["mcc"]
 
         earliest = dates.min()
         latest = dates.max()
         if pd.isna(earliest) or pd.isna(latest):
             continue
 
-        # Prepare user info
         user_row = user_df.loc[cid] if cid in user_df.index else None
         yearly_income_value = (
             parse_currency_series(pd.Series([user_row["yearly_income"]])).iloc[0] if user_row is not None else np.nan
@@ -117,7 +107,6 @@ def summarize_features_sliding(
         estimated_monthly_income = yearly_income_value / 12 if pd.notna(yearly_income_value) else np.nan
         credit_score = float(user_row["credit_score"]) if user_row is not None else np.nan
 
-        # Sliding snapshots starting after at least window_days of history
         snap = earliest + window_delta
         while snap <= latest:
             window_mask = (dates > snap - window_delta) & (dates <= snap)
@@ -221,16 +210,10 @@ def build_training_dataset(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build a training dataset of feature vectors for all clients.")
-    parser.add_argument("--data-dir", type=Path, default=DATA_DIR, help="Directory containing source CSVs.")
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=Path,
-        default=Path(__file__).resolve().parent / "output" / "training_features.csv",
-        help="Output CSV path.",
-    )
-    parser.add_argument("--chunksize", type=int, default=200_000, help="CSV chunk size for streaming.")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-dir", type=Path, default=DATA_DIR)
+    parser.add_argument("--output", "-o", type=Path, default=Path(__file__).resolve().parent / "output" / "training_features.csv")
+    parser.add_argument("--chunksize", type=int, default=200_000)
     args = parser.parse_args()
 
     out = build_training_dataset(data_dir=args.data_dir, output_path=args.output, chunksize=args.chunksize)

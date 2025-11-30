@@ -1,5 +1,3 @@
-"""Dataset + preprocessing utilities for the VAE anomaly detector."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -35,7 +33,6 @@ DEFAULT_FEATURE_COLUMNS: List[str] = [
     "current_txn_mcc",
 ]
 
-# Columns that contain strictly positive values and benefit from log scaling.
 LOG_SCALE_COLUMNS = {
     "estimated_monthly_income",
     "last_inflow_amount",
@@ -73,7 +70,6 @@ class ScalerStats:
 
 
 def _log_scale(series: pd.Series) -> pd.Series:
-    # log1p mitigates heavy tails on strictly positive features
     clipped = series.clip(lower=0)
     return np.log1p(clipped)
 
@@ -87,8 +83,6 @@ def _clip_outliers(data: np.ndarray, lower_q: float, upper_q: float) -> np.ndarr
 
 
 class TransactionDataset(Dataset):
-    """Loads the training CSV, applies preprocessing, and exposes scaler metadata."""
-
     def __init__(
         self,
         csv_path: str | Path,
@@ -102,20 +96,17 @@ class TransactionDataset(Dataset):
         self.columns = [c for c in feature_columns]
 
         df = pd.read_csv(self.csv_path)
-
         missing = [col for col in self.columns if col not in df.columns]
         if missing:
             raise ValueError(f"Missing required feature columns: {missing}")
 
         frame = df[self.columns].copy()
-
         for col in frame.columns:
             frame[col] = pd.to_numeric(frame[col], errors="coerce")
             if col in LOG_SCALE_COLUMNS:
                 frame[col] = _log_scale(frame[col])
 
         frame = frame.replace([np.inf, -np.inf], np.nan).dropna(how="any")
-
         arr = frame.to_numpy(dtype=np.float32)
         if clip_quantile:
             arr = _clip_outliers(arr, 1.0 - clip_quantile, clip_quantile)
@@ -129,13 +120,12 @@ class TransactionDataset(Dataset):
 
         arr = (arr - self.means) / self.stds
         arr *= self.weight_vec
-
         self.data = torch.tensor(arr, dtype=torch.float32)
 
-    def __len__(self) -> int:  # type: ignore[override]
+    def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx: int) -> torch.Tensor:  # type: ignore[override]
+    def __getitem__(self, idx: int) -> torch.Tensor:
         return self.data[idx]
 
     @property
@@ -154,41 +144,20 @@ class TransactionDataset(Dataset):
         stats = self.scaler_stats()
         scaled = stats.transform(values)
         return torch.tensor(scaled, dtype=torch.float32)
-    
+
     def prepare_input_list(self, values: list[float], scaler: ScalerStats) -> torch.Tensor:
-        """
-        Takes a raw feature list (already in correct column order),
-        applies log-scaling, standardization, and weighting,
-        and returns a model-ready tensor.
-        """
         if len(values) != len(scaler.columns):
-            raise ValueError(
-                f"Expected {len(scaler.columns)} features, got {len(values)}"
-            )
+            raise ValueError(f"Expected {len(scaler.columns)} features, got {len(values)}")
 
         processed = []
         for val, col in zip(values, scaler.columns):
-
             try:
                 v = float(val)
             except:
                 v = 0.0
-
             if col in LOG_SCALE_COLUMNS:
                 v = np.log1p(max(v, 0))
-
             processed.append(v)
 
         transformed = scaler.transform(processed)
-
         return torch.tensor(transformed, dtype=torch.float32).unsqueeze(0)
-
-
-
-
-if __name__ == "__main__":
-    dataset = TransactionDataset("../data/training_features.csv")
-    print(f"Dataset length: {len(dataset)}")
-    print(f"Input dimension: {dataset.input_dim}")
-    stats = dataset.scaler_stats()
-    print("First column:", stats.columns[0])

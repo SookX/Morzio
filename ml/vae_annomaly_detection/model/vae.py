@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 
@@ -11,7 +10,7 @@ class VAE(nn.Module):
     def __init__(self, input_dim, hidden_dim, latent_dim):
         super(VAE, self).__init__()
         self.encoder = Encoder(input_dim, hidden_dim, latent_dim)
-        self.ls_head = LatentSpaceHead(hidden_dim*2,latent_dim)
+        self.ls_head = LatentSpaceHead(hidden_dim * 2, latent_dim)
         self.decoder = Decoder(latent_dim, hidden_dim, input_dim)
 
     def forward(self, x):
@@ -19,10 +18,3 @@ class VAE(nn.Module):
         z, mu, logvar = self.ls_head(encoded)
         reconstructed = self.decoder(z)
         return reconstructed, mu, logvar
-
-
-if __name__ == "__main__":
-    model = VAE(input_dim=20, base_dim=32, latent_dim=16)
-    dummy = torch.randn(8, 20)
-    recon, mu, logvar = model(dummy)
-    print(recon.shape, mu.shape, logvar.shape)

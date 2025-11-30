@@ -3,6 +3,7 @@ from utils import read_config, data_split
 from pipeline import VAEAnomalyDetectionPipeline
 from dataset.dataset import TransactionDataset
 
+
 if __name__ == "__main__":
     config = read_config("./config.yaml")
     dataset = TransactionDataset("../data/training_features.csv")
