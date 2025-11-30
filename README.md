@@ -42,7 +42,7 @@
 
 ## 🎯 Overview
 
-**Morzio** is a complete Buy Now, Pay Later (BNPL) fintech platform that enables merchants to offer installment payments (4-48 months) to customers. Unlike traditional credit scoring that relies on credit bureau checks, Morzio uses **machine learning** to analyze real-time transaction patterns and make instant credit decisions.
+**Morzio** is a complete Buy Now, Pay Later (BNPL) fintech platform that enables merchants to offer installment payments (4-48 weeks) to customers. Unlike traditional credit scoring that relies on credit bureau checks, Morzio uses **machine learning** to analyze real-time transaction patterns and make instant credit decisions.
 
 ### Key Features
 
