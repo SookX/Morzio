@@ -1,0 +1,57 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Test files
+test_*.py
+*_test.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Graph generation (not needed in production)
+generate_readme_graphs.py
+
+# ============================================
+# LARGE DATASET FILES (1.4GB+) - NOT NEEDED IN PRODUCTION
+# ============================================
+vae_annomaly_detection/dataset/dist/
+vae_annomaly_detection/dataset/data_visuals/
+vae_annomaly_detection/ml/
+
+# Raw data files
+*.csv
+!data/training_features.csv
+
