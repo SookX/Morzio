@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, RequestInfo> requestCounts = new ConcurrentHashMap<>();
-    private final int MAX_REQUESTS = 20;
+    private final int MAX_REQUESTS = 1000000;
     private final long TIME_WINDOW = 60000;
 
     private static class RequestInfo {
@@ -30,8 +30,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         String ip = request.getRemoteAddr();
