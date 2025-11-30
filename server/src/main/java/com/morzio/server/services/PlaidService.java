@@ -72,4 +72,18 @@ public class PlaidService {
 
         return response.body();
     }
+
+    public AccountsGetResponse getAccountBalances(String accessToken) throws IOException {
+        AccountsGetRequest request = new AccountsGetRequest()
+                .accessToken(accessToken);
+
+        Response<AccountsGetResponse> response = plaidApi.accountsGet(request).execute();
+
+        if (!response.isSuccessful()) {
+            throw new RuntimeException("Failed to get account balances: "
+                    + (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
+        }
+
+        return response.body();
+    }
 }
