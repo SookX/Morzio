@@ -13,77 +13,129 @@ import java.util.Collections;
 @Service
 public class PlaidService {
 
-    private final PlaidApi plaidApi;
+        private final PlaidApi plaidApi;
 
-    public PlaidService(PlaidApi plaidApi) {
-        this.plaidApi = plaidApi;
-    }
-
-    public String createLinkToken(String clientUserId) throws IOException {
-        LinkTokenCreateRequestUser user = new LinkTokenCreateRequestUser()
-                .clientUserId(clientUserId);
-
-        LinkTokenCreateRequest request = new LinkTokenCreateRequest()
-                .user(user)
-                .clientName("Morzio")
-                .products(Collections.singletonList(Products.TRANSACTIONS))
-                .countryCodes(Collections.singletonList(CountryCode.GB))
-                .language("en");
-
-        Response<LinkTokenCreateResponse> response = plaidApi.linkTokenCreate(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new RuntimeException("Failed to create link token: "
-                    + (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
+        public PlaidService(PlaidApi plaidApi) {
+                this.plaidApi = plaidApi;
         }
 
-        return response.body().getLinkToken();
-    }
+        public String createLinkToken(String clientUserId) throws IOException {
+                LinkTokenCreateRequestUser user = new LinkTokenCreateRequestUser()
+                                .clientUserId(clientUserId);
 
-    public String exchangePublicToken(String publicToken) throws IOException {
-        ItemPublicTokenExchangeRequest request = new ItemPublicTokenExchangeRequest()
-                .publicToken(publicToken);
+                LinkTokenCreateRequest request = new LinkTokenCreateRequest()
+                                .user(user)
+                                .clientName("Morzio")
+                                .products(Collections.singletonList(Products.TRANSACTIONS))
+                                .countryCodes(Collections.singletonList(CountryCode.DE))
+                                .language("en");
 
-        Response<ItemPublicTokenExchangeResponse> response = plaidApi.itemPublicTokenExchange(request).execute();
+                Response<LinkTokenCreateResponse> response = plaidApi.linkTokenCreate(request).execute();
 
-        if (!response.isSuccessful()) {
-            throw new RuntimeException("Failed to exchange public token: "
-                    + (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
+                if (!response.isSuccessful()) {
+                        throw new RuntimeException("Failed to create link token: "
+                                        + (response.errorBody() != null ? response.errorBody().string()
+                                                        : "Unknown error"));
+                }
+
+                return response.body().getLinkToken();
         }
 
-        return response.body().getAccessToken();
-    }
+        public String exchangePublicToken(String publicToken) throws IOException {
+                ItemPublicTokenExchangeRequest request = new ItemPublicTokenExchangeRequest()
+                                .publicToken(publicToken);
 
-    public TransactionsGetResponse getTransactions(String accessToken) throws IOException {
-        LocalDate startDate = LocalDate.now().minusDays(90);
-        LocalDate endDate = LocalDate.now();
+                Response<ItemPublicTokenExchangeResponse> response = plaidApi.itemPublicTokenExchange(request)
+                                .execute();
 
-        TransactionsGetRequest request = new TransactionsGetRequest()
-                .accessToken(accessToken)
-                .startDate(startDate)
-                .endDate(endDate);
+                if (!response.isSuccessful()) {
+                        throw new RuntimeException("Failed to exchange public token: "
+                                        + (response.errorBody() != null ? response.errorBody().string()
+                                                        : "Unknown error"));
+                }
 
-        Response<TransactionsGetResponse> response = plaidApi.transactionsGet(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new RuntimeException("Failed to get transactions: "
-                    + (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
+                return response.body().getAccessToken();
         }
 
-        return response.body();
-    }
+        public TransactionsGetResponse getTransactions(String accessToken) throws IOException {
+                LocalDate startDate = LocalDate.now().minusDays(90);
+                LocalDate endDate = LocalDate.now();
 
-    public AccountsGetResponse getAccountBalances(String accessToken) throws IOException {
-        AccountsGetRequest request = new AccountsGetRequest()
-                .accessToken(accessToken);
+                TransactionsGetRequest request = new TransactionsGetRequest()
+                                .accessToken(accessToken)
+                                .startDate(startDate)
+                                .endDate(endDate);
 
-        Response<AccountsGetResponse> response = plaidApi.accountsGet(request).execute();
+                Response<TransactionsGetResponse> response = plaidApi.transactionsGet(request).execute();
 
-        if (!response.isSuccessful()) {
-            throw new RuntimeException("Failed to get account balances: "
-                    + (response.errorBody() != null ? response.errorBody().string() : "Unknown error"));
+                if (!response.isSuccessful()) {
+                        throw new RuntimeException("Failed to get transactions: "
+                                        + (response.errorBody() != null ? response.errorBody().string()
+                                                        : "Unknown error"));
+                }
+
+                return response.body();
         }
 
-        return response.body();
-    }
+        public AccountsGetResponse getAccountBalances(String accessToken) throws IOException {
+                AccountsGetRequest request = new AccountsGetRequest()
+                                .accessToken(accessToken);
+
+                Response<AccountsGetResponse> response = plaidApi.accountsGet(request).execute();
+
+                if (!response.isSuccessful()) {
+                        throw new RuntimeException("Failed to get account balances: "
+                                        + (response.errorBody() != null ? response.errorBody().string()
+                                                        : "Unknown error"));
+                }
+
+                return response.body();
+        }
+
+        public String initiatePayment(Double amount) throws IOException {
+                // 1. Create Recipient (Sandbox)
+                RecipientBACSNullable bacs = new RecipientBACSNullable()
+                                .account("12345678")
+                                .sortCode("102030");
+
+                PaymentInitiationRecipientCreateRequest recipientRequest = new PaymentInitiationRecipientCreateRequest()
+                                .name("Morzio Sandbox Recipient")
+                                .bacs(bacs)
+                                .address(new PaymentInitiationAddress()
+                                                .street(Collections.singletonList("123 Sandbox St"))
+                                                .city("London")
+                                                .postalCode("EC1A 1BB")
+                                                .country("GB"));
+
+                Response<PaymentInitiationRecipientCreateResponse> recipientResponse = plaidApi
+                                .paymentInitiationRecipientCreate(recipientRequest).execute();
+
+                if (!recipientResponse.isSuccessful()) {
+                        throw new RuntimeException("Failed to create recipient: "
+                                        + (recipientResponse.errorBody() != null
+                                                        ? recipientResponse.errorBody().string()
+                                                        : "Unknown error"));
+                }
+
+                String recipientId = recipientResponse.body().getRecipientId();
+
+                // 2. Create Payment
+                PaymentInitiationPaymentCreateRequest paymentRequest = new PaymentInitiationPaymentCreateRequest()
+                                .recipientId(recipientId)
+                                .reference("Morzio Payment")
+                                .amount(new PaymentAmount()
+                                                .currency(PaymentAmountCurrency.EUR)
+                                                .value(amount * 100));
+
+                Response<PaymentInitiationPaymentCreateResponse> paymentResponse = plaidApi
+                                .paymentInitiationPaymentCreate(paymentRequest).execute();
+
+                if (!paymentResponse.isSuccessful()) {
+                        throw new RuntimeException("Failed to initiate payment: "
+                                        + (paymentResponse.errorBody() != null ? paymentResponse.errorBody().string()
+                                                        : "Unknown error"));
+                }
+
+                return paymentResponse.body().getPaymentId();
+        }
 }

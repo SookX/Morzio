@@ -9,6 +9,12 @@ import com.plaid.client.model.AccountBase;
 import com.plaid.client.model.AccountsGetResponse;
 import com.plaid.client.model.Transaction;
 import com.plaid.client.model.TransactionsGetResponse;
+import com.morzio.server.dtos.PlaidService.SelectPlanRequestDto;
+import com.morzio.server.dtos.PlaidService.SelectPlanResponseDto;
+import com.morzio.server.repositorys.PaymentSessionRepository;
+import com.morzio.server.entities.PaymentSession;
+import java.util.UUID;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,212 +34,285 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/plaid")
 public class PlaidApiController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PlaidApiController.class);
+        private static final Logger logger = LoggerFactory.getLogger(PlaidApiController.class);
 
-    @Autowired
-    private PlaidService plaidService;
+        @Autowired
+        private PlaidService plaidService;
 
-    /**
-     * Handles the Plaid Link success callback
-     * Exchanges public token, fetches account balances and transactions,
-     * and returns installment plan options based on risk logic
-     *
-     * @param request Contains publicToken and transactionAmount
-     * @return PlaidOnSuccessResponseDto with installment plans or error
-     */
-    @PostMapping("/on-success")
-    public ResponseEntity<PlaidOnSuccessResponseDto> handlePlaidSuccess(@RequestBody PlaidOnSuccessRequestDto request) {
-        try {
-            // Validate request
-            if (request.getPublicToken() == null || request.getPublicToken().isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        new PlaidOnSuccessResponseDto(false, null, null, null, "Public token is required"));
-            }
+        @Autowired
+        private PaymentSessionRepository paymentSessionRepository;
 
-            if (request.getTransactionAmount() == null || request.getTransactionAmount() <= 0) {
-                return ResponseEntity.badRequest().body(
-                        new PlaidOnSuccessResponseDto(false, null, null, null, "Valid transaction amount is required"));
-            }
+        /**
+         * Handles the Plaid Link success callback
+         * Exchanges public token, fetches account balances and transactions,
+         * and returns installment plan options based on risk logic
+         *
+         * @param request Contains publicToken and transactionAmount
+         * @return PlaidOnSuccessResponseDto with installment plans or error
+         */
+        @PostMapping("/on-success")
+        public ResponseEntity<PlaidOnSuccessResponseDto> handlePlaidSuccess(
+                        @RequestBody PlaidOnSuccessRequestDto request) {
+                try {
+                        // Validate request
+                        if (request.getPublicToken() == null || request.getPublicToken().isEmpty()) {
+                                return ResponseEntity.badRequest().body(
+                                                new PlaidOnSuccessResponseDto(false, null, null, null,
+                                                                "Public token is required"));
+                        }
 
-            logger.info("Processing Plaid success callback for transaction amount: £{}",
-                    request.getTransactionAmount());
+                        if (request.getTransactionAmount() == null || request.getTransactionAmount() <= 0) {
+                                return ResponseEntity.badRequest().body(
+                                                new PlaidOnSuccessResponseDto(false, null, null, null,
+                                                                "Valid transaction amount is required"));
+                        }
 
-            // Step 1: Exchange public token for access token
-            String accessToken = plaidService.exchangePublicToken(request.getPublicToken());
-            logger.info("Successfully exchanged public token for access token");
+                        logger.info("Processing Plaid success callback for transaction amount: £{}",
+                                        request.getTransactionAmount());
 
-            // Step 2: Fetch account balances
-            AccountsGetResponse accountsResponse = plaidService.getAccountBalances(accessToken);
-            logger.info("Retrieved {} account(s)", accountsResponse.getAccounts().size());
+                        // Step 1: Exchange public token for access token
+                        String accessToken = plaidService.exchangePublicToken(request.getPublicToken());
+                        logger.info("Successfully exchanged public token for access token");
 
-            // Step 3: Fetch transactions
-            TransactionsGetResponse transactionsResponse = plaidService.getTransactions(accessToken);
-            List<TransactionDto> transactionDtos = mapTransactions(transactionsResponse.getTransactions());
+                        // Step 2: Fetch account balances
+                        AccountsGetResponse accountsResponse = plaidService.getAccountBalances(accessToken);
+                        logger.info("Retrieved {} account(s)", accountsResponse.getAccounts().size());
 
-            logger.info("Retrieved {} transaction(s) from the last 90 days", transactionDtos.size());
+                        // Step 3: Fetch transactions
+                        TransactionsGetResponse transactionsResponse = plaidService.getTransactions(accessToken);
+                        List<TransactionDto> transactionDtos = mapTransactions(transactionsResponse.getTransactions());
 
-            // Log all transactions
-            logTransactions(transactionDtos);
+                        logger.info("Retrieved {} transaction(s) from the last 90 days", transactionDtos.size());
 
-            // Step 4: Mock risk logic - check if account balance > transaction amount
-            Double totalBalance = calculateTotalBalance(accountsResponse.getAccounts());
-            Double transactionAmount = request.getTransactionAmount();
+                        // Log all transactions
+                        logTransactions(transactionDtos);
 
-            logger.info("Total available balance: £{}, Transaction amount: £{}", totalBalance, transactionAmount);
+                        // Step 4: Mock risk logic - check if account balance > transaction amount
+                        Double totalBalance = calculateTotalBalance(accountsResponse.getAccounts());
+                        Double transactionAmount = request.getTransactionAmount();
 
-            if (totalBalance >= transactionAmount) {
-                // User has sufficient balance - return installment plan options
-                List<InstallmentPlanDto> installmentPlans = generateInstallmentPlans(transactionAmount);
+                        logger.info("Total available balance: £{}, Transaction amount: £{}", totalBalance,
+                                        transactionAmount);
 
-                logger.info("Risk check PASSED - Offering {} installment plan options", installmentPlans.size());
+                        if (totalBalance >= transactionAmount) {
+                                // User has sufficient balance - return installment plan options
+                                List<InstallmentPlanDto> installmentPlans = generateInstallmentPlans(transactionAmount);
 
-                return ResponseEntity.ok(
-                        new PlaidOnSuccessResponseDto(
-                                true,
-                                "Installment plans available",
-                                installmentPlans,
-                                transactionDtos,
-                                null));
-            } else {
-                // Insufficient balance
-                logger.warn("Risk check FAILED - Insufficient balance. Available: £{}, Required: £{}",
-                        totalBalance, transactionAmount);
+                                logger.info("Risk check PASSED - Offering {} installment plan options",
+                                                installmentPlans.size());
 
-                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(
-                        new PlaidOnSuccessResponseDto(
-                                false,
-                                null,
-                                null,
-                                transactionDtos,
-                                String.format("Insufficient balance. Available: £%.2f, Required: £%.2f",
-                                        totalBalance, transactionAmount)));
-            }
+                                return ResponseEntity.ok(
+                                                new PlaidOnSuccessResponseDto(
+                                                                true,
+                                                                "Installment plans available",
+                                                                installmentPlans,
+                                                                transactionDtos,
+                                                                null));
+                        } else {
+                                // Insufficient balance
+                                logger.warn("Risk check FAILED - Insufficient balance. Available: £{}, Required: £{}",
+                                                totalBalance, transactionAmount);
 
-        } catch (IOException e) {
-            logger.error("IOException while processing Plaid token: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new PlaidOnSuccessResponseDto(
-                            false,
-                            null,
-                            null,
-                            null,
-                            "Failed to process Plaid token: " + e.getMessage()));
-        } catch (Exception e) {
-            logger.error("Unexpected error while processing Plaid callback: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new PlaidOnSuccessResponseDto(
-                            false,
-                            null,
-                            null,
-                            null,
-                            "An unexpected error occurred: " + e.getMessage()));
+                                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(
+                                                new PlaidOnSuccessResponseDto(
+                                                                false,
+                                                                null,
+                                                                null,
+                                                                transactionDtos,
+                                                                String.format("Insufficient balance. Available: £%.2f, Required: £%.2f",
+                                                                                totalBalance, transactionAmount)));
+                        }
+
+                } catch (IOException e) {
+                        logger.error("IOException while processing Plaid token: {}", e.getMessage(), e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                                        new PlaidOnSuccessResponseDto(
+                                                        false,
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        "Failed to process Plaid token: " + e.getMessage()));
+                } catch (Exception e) {
+                        logger.error("Unexpected error while processing Plaid callback: {}", e.getMessage(), e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                                        new PlaidOnSuccessResponseDto(
+                                                        false,
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        "An unexpected error occurred: " + e.getMessage()));
+                }
         }
-    }
 
-    /**
-     * Map Plaid transactions to TransactionDto objects
-     *
-     * @param transactions List of Plaid transactions
-     * @return List of TransactionDto objects
-     */
-    private List<TransactionDto> mapTransactions(List<Transaction> transactions) {
-        return transactions.stream()
-                .map(transaction -> new TransactionDto(
-                        transaction.getTransactionId(),
-                        transaction.getName(),
-                        transaction.getAmount(),
-                        transaction.getDate(),
-                        transaction.getPersonalFinanceCategory() != null
-                                ? transaction.getPersonalFinanceCategory().getPrimary()
-                                : "Uncategorized",
-                        transaction.getMerchantName(),
-                        transaction.getPending()))
-                .collect(Collectors.toList());
-    }
+        /**
+         * Selects a plan and initiates payment
+         *
+         * @param request Contains sessionId and downPaymentAmount
+         * @return SelectPlanResponseDto with paymentId
+         */
+        @PostMapping("/select-plan")
+        public ResponseEntity<SelectPlanResponseDto> selectPlan(@RequestBody SelectPlanRequestDto request) {
+                try {
+                        if (request.getSessionId() == null || request.getSessionId().isEmpty()) {
+                                return ResponseEntity.badRequest().body(
+                                                new SelectPlanResponseDto(false, null, "Session ID is required"));
+                        }
 
-    /**
-     * Log all transactions with detailed information
-     *
-     * @param transactions List of transactions to log
-     */
-    private void logTransactions(List<TransactionDto> transactions) {
-        logger.info("==================== TRANSACTION DETAILS ====================");
-        logger.info("Total transactions: {}", transactions.size());
+                        if (request.getDownPaymentAmount() == null || request.getDownPaymentAmount() <= 0) {
+                                return ResponseEntity.badRequest().body(
+                                                new SelectPlanResponseDto(false, null,
+                                                                "Valid down payment amount is required"));
+                        }
 
-        if (transactions.isEmpty()) {
-            logger.info("No transactions found in the last 90 days");
-        } else {
-            for (int i = 0; i < transactions.size(); i++) {
-                TransactionDto tx = transactions.get(i);
-                logger.info("Transaction #{}: {} | Amount: £{} | Date: {} | Merchant: {} | Category: {} | Pending: {}",
-                        i + 1,
-                        tx.getName(),
-                        tx.getAmount(),
-                        tx.getDate(),
-                        tx.getMerchantName() != null ? tx.getMerchantName() : "N/A",
-                        tx.getCategory(),
-                        tx.getPending());
-            }
+                        logger.info("Processing select plan for session: {}, Amount: £{}",
+                                        request.getSessionId(), request.getDownPaymentAmount());
 
-            // Summary statistics
-            double totalSpent = transactions.stream()
-                    .filter(tx -> tx.getAmount() > 0)
-                    .mapToDouble(TransactionDto::getAmount)
-                    .sum();
+                        // Initiate payment
+                        String paymentId = plaidService.initiatePayment(request.getDownPaymentAmount());
+                        logger.info("Payment initiated successfully. Payment ID: {}", paymentId);
 
-            double totalIncome = transactions.stream()
-                    .filter(tx -> tx.getAmount() < 0)
-                    .mapToDouble(TransactionDto::getAmount)
-                    .sum();
+                        // Update session status
+                        try {
+                                UUID sessionUuid = UUID.fromString(request.getSessionId());
+                                Optional<PaymentSession> sessionOpt = paymentSessionRepository.findById(sessionUuid);
 
-            logger.info("==================== TRANSACTION SUMMARY ====================");
-            logger.info("Total Spent: £{}", totalSpent);
-            logger.info("Total Income: £{}", Math.abs(totalIncome));
-            logger.info("Net: £{}", totalIncome + totalSpent);
+                                if (sessionOpt.isPresent()) {
+                                        PaymentSession session = sessionOpt.get();
+                                        session.setStatus("COMPLETED");
+                                        paymentSessionRepository.save(session);
+                                        logger.info("Session {} status updated to COMPLETED", request.getSessionId());
+                                } else {
+                                        logger.warn("Session {} not found", request.getSessionId());
+                                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                                        new SelectPlanResponseDto(false, null, "Session not found"));
+                                }
+                        } catch (IllegalArgumentException e) {
+                                logger.error("Invalid UUID format: {}", request.getSessionId());
+                                return ResponseEntity.badRequest().body(
+                                                new SelectPlanResponseDto(false, null, "Invalid Session ID format"));
+                        }
+
+                        return ResponseEntity.ok(new SelectPlanResponseDto(true, paymentId,
+                                        "Payment initiated and session updated"));
+
+                } catch (IOException e) {
+                        logger.error("IOException while initiating payment: {}", e.getMessage(), e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                                        new SelectPlanResponseDto(false, null,
+                                                        "Failed to initiate payment: " + e.getMessage()));
+                } catch (Exception e) {
+                        logger.error("Unexpected error in select-plan: {}", e.getMessage(), e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                                        new SelectPlanResponseDto(false, null,
+                                                        "An unexpected error occurred: " + e.getMessage()));
+                }
         }
-        logger.info("=============================================================");
-    }
 
-    /**
-     * Calculate total available balance across all accounts
-     *
-     * @param accounts List of account balances from Plaid
-     * @return Total available balance
-     */
-    private Double calculateTotalBalance(List<AccountBase> accounts) {
-        return accounts.stream()
-                .filter(account -> account.getBalances() != null && account.getBalances().getAvailable() != null)
-                .mapToDouble(account -> account.getBalances().getAvailable())
-                .sum();
-    }
+        /**
+         * Map Plaid transactions to TransactionDto objects
+         *
+         * @param transactions List of Plaid transactions
+         * @return List of TransactionDto objects
+         */
+        private List<TransactionDto> mapTransactions(List<Transaction> transactions) {
+                return transactions.stream()
+                                .map(transaction -> new TransactionDto(
+                                                transaction.getTransactionId(),
+                                                transaction.getName(),
+                                                transaction.getAmount(),
+                                                transaction.getDate(),
+                                                transaction.getPersonalFinanceCategory() != null
+                                                                ? transaction.getPersonalFinanceCategory().getPrimary()
+                                                                : "Uncategorized",
+                                                transaction.getMerchantName(),
+                                                transaction.getPending()))
+                                .collect(Collectors.toList());
+        }
 
-    /**
-     * Generate installment plan options: Pay in 1, Pay in 3, Pay in 6
-     *
-     * @param amount Transaction amount
-     * @return List of installment plan options
-     */
-    private List<InstallmentPlanDto> generateInstallmentPlans(Double amount) {
-        List<InstallmentPlanDto> plans = new ArrayList<>();
+        /**
+         * Log all transactions with detailed information
+         *
+         * @param transactions List of transactions to log
+         */
+        private void logTransactions(List<TransactionDto> transactions) {
+                logger.info("==================== TRANSACTION DETAILS ====================");
+                logger.info("Total transactions: {}", transactions.size());
 
-        // Pay in 1 (full amount)
-        plans.add(new InstallmentPlanDto(
-                1,
-                amount,
-                "Pay in 1"));
+                if (transactions.isEmpty()) {
+                        logger.info("No transactions found in the last 90 days");
+                } else {
+                        for (int i = 0; i < transactions.size(); i++) {
+                                TransactionDto tx = transactions.get(i);
+                                logger.info("Transaction #{}: {} | Amount: £{} | Date: {} | Merchant: {} | Category: {} | Pending: {}",
+                                                i + 1,
+                                                tx.getName(),
+                                                tx.getAmount(),
+                                                tx.getDate(),
+                                                tx.getMerchantName() != null ? tx.getMerchantName() : "N/A",
+                                                tx.getCategory(),
+                                                tx.getPending());
+                        }
 
-        // Pay in 3
-        plans.add(new InstallmentPlanDto(
-                3,
-                Math.round(amount / 3 * 100.0) / 100.0,
-                "Pay in 3"));
+                        // Summary statistics
+                        double totalSpent = transactions.stream()
+                                        .filter(tx -> tx.getAmount() > 0)
+                                        .mapToDouble(TransactionDto::getAmount)
+                                        .sum();
 
-        // Pay in 6
-        plans.add(new InstallmentPlanDto(
-                6,
-                Math.round(amount / 6 * 100.0) / 100.0,
-                "Pay in 6"));
+                        double totalIncome = transactions.stream()
+                                        .filter(tx -> tx.getAmount() < 0)
+                                        .mapToDouble(TransactionDto::getAmount)
+                                        .sum();
 
-        return plans;
-    }
+                        logger.info("==================== TRANSACTION SUMMARY ====================");
+                        logger.info("Total Spent: £{}", totalSpent);
+                        logger.info("Total Income: £{}", Math.abs(totalIncome));
+                        logger.info("Net: £{}", totalIncome + totalSpent);
+                }
+                logger.info("=============================================================");
+        }
+
+        /**
+         * Calculate total available balance across all accounts
+         *
+         * @param accounts List of account balances from Plaid
+         * @return Total available balance
+         */
+        private Double calculateTotalBalance(List<AccountBase> accounts) {
+                return accounts.stream()
+                                .filter(account -> account.getBalances() != null
+                                                && account.getBalances().getAvailable() != null)
+                                .mapToDouble(account -> account.getBalances().getAvailable())
+                                .sum();
+        }
+
+        /**
+         * Generate installment plan options: Pay in 1, Pay in 3, Pay in 6
+         *
+         * @param amount Transaction amount
+         * @return List of installment plan options
+         */
+        private List<InstallmentPlanDto> generateInstallmentPlans(Double amount) {
+                List<InstallmentPlanDto> plans = new ArrayList<>();
+
+                // Pay in 1 (full amount)
+                plans.add(new InstallmentPlanDto(
+                                1,
+                                amount,
+                                "Pay in 1"));
+
+                // Pay in 3
+                plans.add(new InstallmentPlanDto(
+                                3,
+                                Math.round(amount / 3 * 100.0) / 100.0,
+                                "Pay in 3"));
+
+                // Pay in 6
+                plans.add(new InstallmentPlanDto(
+                                6,
+                                Math.round(amount / 6 * 100.0) / 100.0,
+                                "Pay in 6"));
+
+                return plans;
+        }
 }

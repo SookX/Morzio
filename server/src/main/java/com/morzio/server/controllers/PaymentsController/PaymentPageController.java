@@ -33,6 +33,7 @@ public class PaymentPageController {
 
         model.addAttribute("amount", formattedAmount);
         model.addAttribute("linkToken", linkToken);
+        model.addAttribute("sessionId", sessionId);
 
         return "payment";
     }
