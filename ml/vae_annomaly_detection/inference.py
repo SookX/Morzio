@@ -23,35 +23,38 @@ if __name__ == "__main__":
     print("Model loaded for inference.")
 
     sample_vector = [
-    1500.0,      # estimated_monthly_income (low)
-    80.0,        # last_inflow_amount (tiny inflow recently)
-    28.0,        # days_since_last_inflow (long gap - instability)
-    510.0,       # credit_score (poor)
-    2500.0,      # total_spend_30d (very high vs income)
-    6200.0,      # total_spend_90d (extremely high)
-    45,          # transaction_count_30d (unusually high)
-    130,         # transaction_count_90d (unusually high)
-    180.0,       # avg_txn_amount_30d (high relative to income)
-    165.0,       # avg_txn_amount_90d
-    2100.0,      # max_txn_amount_90d (suspiciously large)
-    950.0,       # txn_amount_median_90d (too high)
-    140.0,       # spend_volatility_30d (unstable + high variance)
-    310.0,       # spend_volatility_90d (extreme volatility)
-    1.65,        # spend_to_income_ratio_30d (>100% of income = bad)
-    2.40,        # spend_to_income_ratio_90d (>200% of income)
-    0.32,        # avg_txn_over_income_ratio_90d (abnormally high)
-    0.95,        # txn_count_30d_norm (near max risk)
-    -1800.0,     # current_txn_amount (very large negative withdrawal)
-    7995         # current_txn_mcc (high-risk / unusual merchant)
+    4967.75,                 # estimated_monthly_income
+    88.08,                   # last_inflow_amount
+    0.0,                     # days_since_last_inflow
+    763.0,                   # credit_score
+    524.0,                   # total_spend_30d
+    1278.0,                  # total_spend_90d
+    3,                       # transaction_count_30d
+    12,                      # transaction_count_90d
+    174.66666666666666,      # avg_txn_amount_30d
+    106.5,                   # avg_txn_amount_90d
+    259.0,                   # max_txn_amount_90d
+    78.0,                    # txn_amount_median_90d
+    81.75709279458403,       # spend_volatility_30d
+    65.20544455795083,       # spend_volatility_90d
+    0.10548034824618792,     # spend_to_income_ratio_30d
+    0.08575310754365659,     # spend_to_income_ratio_90d
+    0.021438276885914147,    # avg_txn_over_income_ratio_90d
+    0.1,                     # txn_count_30d_norm
+    -640.0,                   # current_txn_amount
+    5541                     # current_txn_mcc
 ]
-
-
 
     input_tensor = dataset.prepare_input_list(
         sample_vector,stats
     )
 
-    anomaly, _, _ = vae.anomaly_score(input_tensor)
-    print("Anomaly score:", anomaly.item())
-    #print("Recon:", recon_error.item(), " KL:", kl.item())
+    decisions = vae.anomaly_score(input_tensor)
+    decision = decisions[0]
+    if decision["pass"]:
+        print(f"Decision: PASS ({decision['risk']})")
+        print(f"Risk epsilon: {decision['epsilon']:.4f}")
+    else:
+        print(f"Decision: BLOCK ({decision['risk']})")
+    print(f"Raw score: {decision['score']:.4f}")
     

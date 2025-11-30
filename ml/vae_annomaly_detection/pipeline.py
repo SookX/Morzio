@@ -1,13 +1,7 @@
+import os
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-import os
-from utils import get_device
-from tqdm import tqdm
-
-import torch
-import torch.nn as nn
-import os
 from utils import get_device
 from model.vae import VAE
 from tqdm import tqdm
@@ -23,6 +17,10 @@ class VAEAnomalyDetectionPipeline:
         self.training_cfg = config['training']
         self.logging_cfg = config['logging']
         self.callbacks_cfg = config['callbacks']
+        risk_cfg = config.get("risk", {})
+        self.low_risk_threshold = float(risk_cfg.get("low_threshold", 0.3))
+        self.medium_risk_threshold = float(risk_cfg.get("high_threshold", 0.6))
+        self.block_threshold = float(risk_cfg.get("block_threshold", 0.85))
 
         lr = float(self.training_cfg['learning_rate'])
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
@@ -139,13 +137,12 @@ class VAEAnomalyDetectionPipeline:
             #loss, recon_loss, kld_loss = self.compute_loss(x, reconstructed, mu, logvar)
         return reconstructed, mu, logvar 
     
-    def anomaly_score(self, vector, alpha=1.0, beta=0.1):
+    def anomaly_score(self, vector, alpha=1.0, beta=0.05):
 
         vector = vector.to(self.device)
 
         reconstructed, mu, logvar = self.inference(vector)
 
-    
         recon_error = F.mse_loss(reconstructed, vector, reduction='none')
         recon_error = recon_error.mean(dim=-1)
 
@@ -153,8 +150,33 @@ class VAEAnomalyDetectionPipeline:
 
         anomaly = alpha * recon_error + beta * kl
 
-        return (
-            anomaly.detach().cpu(),
-            recon_error.detach().cpu(),
-            kl.detach().cpu()
-        )
+        recon_cpu = recon_error.detach().cpu()
+        kl_cpu = kl.detach().cpu()
+        scores = anomaly.detach().cpu()
+
+        def normalize(score_value: float) -> float:
+            normalized = score_value / (score_value + 1.0) if score_value >= 0 else 0.0
+            return max(0.0, min(normalized, 1.0))
+
+        decisions = []
+        for score, recon_val, kl_val in zip(scores, recon_cpu, kl_cpu):
+            score_value = float(score)
+            epsilon = normalize(score_value)
+            if epsilon < self.low_risk_threshold:
+                risk_label = "Low Risk"
+            elif epsilon < self.medium_risk_threshold:
+                risk_label = "Medium Risk"
+            else:
+                risk_label = "High Risk"
+
+            passed = epsilon < self.block_threshold
+            decisions.append({
+                "pass": passed,
+                "risk": risk_label,
+                "epsilon": epsilon if passed else None,
+                "score": score_value,
+                "reconstruction_error": float(recon_val),
+                "kl_divergence": float(kl_val),
+            })
+
+        return decisions

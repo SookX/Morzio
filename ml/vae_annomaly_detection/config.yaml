@@ -32,3 +32,8 @@ callbacks:
     enabled: true
     filepath: checkpoints/best_model.h5
     save_best_only: true
+
+risk:
+  low_threshold: 0.3
+  high_threshold: 0.6
+  block_threshold: 0.85
