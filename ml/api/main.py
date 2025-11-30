@@ -33,9 +33,6 @@ class PredictRequest(BaseModel):
 class PredictResponse(BaseModel):
     approved: bool
     max_installments: int
-    risk_level: str
-    anomaly_score: float
-    feature_vector: Optional[List[float]] = None
 
 
 ml_pipeline = {}
@@ -110,8 +107,6 @@ async def predict(request: PredictRequest):
     decision = decisions[0]
 
     anomaly_score = decision["score"]
-    risk_level = decision["risk"]
-
     estimated_monthly_income = feature_vector[0]
     n = max_installments(
         monthly_income=estimated_monthly_income,
@@ -121,10 +116,7 @@ async def predict(request: PredictRequest):
 
     return PredictResponse(
         approved=n > 0,
-        max_installments=n,
-        risk_level=risk_level,
-        anomaly_score=round(anomaly_score, 4),
-        feature_vector=feature_vector
+        max_installments=n
     )
 
 
