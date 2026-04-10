@@ -68,15 +68,34 @@ public class PlaidService {
                                 .startDate(startDate)
                                 .endDate(endDate);
 
-                Response<TransactionsGetResponse> response = plaidApi.transactionsGet(request).execute();
+                // Plaid sandbox may not have transactions ready immediately after
+                // token exchange. Retry with backoff when PRODUCT_NOT_READY is returned.
+                int maxRetries = 5;
+                int delayMs = 2000;
 
-                if (!response.isSuccessful()) {
-                        throw new RuntimeException("Failed to get transactions: "
-                                        + (response.errorBody() != null ? response.errorBody().string()
-                                                        : "Unknown error"));
+                for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                        Response<TransactionsGetResponse> response = plaidApi.transactionsGet(request).execute();
+
+                        if (response.isSuccessful()) {
+                                return response.body();
+                        }
+
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+
+                        if (errorBody.contains("PRODUCT_NOT_READY") && attempt < maxRetries) {
+                                try {
+                                        Thread.sleep(delayMs);
+                                        delayMs *= 2; // exponential backoff
+                                } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
+                                        throw new RuntimeException("Retry interrupted", e);
+                                }
+                        } else {
+                                throw new RuntimeException("Failed to get transactions: " + errorBody);
+                        }
                 }
 
-                return response.body();
+                throw new RuntimeException("Failed to get transactions after " + maxRetries + " retries");
         }
 
         public AccountsGetResponse getAccountBalances(String accessToken) throws IOException {

@@ -51,8 +51,11 @@ services:
       - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
       - PLAID_SECRET=${PLAID_SECRET}
       - PLAID_ENVIRONMENT=${PLAID_ENVIRONMENT}
+      - APP_BASE_URL=${APP_BASE_URL}
     depends_on:
       ml-service:
+        condition: service_healthy
+      db:
         condition: service_healthy
     networks:
       - morzio-network
@@ -86,25 +89,48 @@ services:
     restart: unless-stopped
 
   # ============================================
-  # PostgreSQL Database (optional)
+  # PostgreSQL Database
   # ============================================
-  # db:
-  #   image: postgres:15-alpine
-  #   container_name: morzio-db
-  #   environment:
-  #     - POSTGRES_DB=morzio
-  #     - POSTGRES_USER=morzio
-  #     - POSTGRES_PASSWORD=morzio_secret
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   networks:
-  #     - morzio-network
+  db:
+    image: postgres:15-alpine
+    container_name: morzio-db
+    environment:
+      - POSTGRES_DB=morzio
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - morzio-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d morzio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ============================================
+  # Cloudflare Tunnel
+  # ============================================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: morzio-tunnel
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - morzio-network
+    restart: unless-stopped
 
 networks:
   morzio-network:
     driver: bridge
-# volumes:
-#   postgres_data:
-
+volumes:
+  postgres_data:

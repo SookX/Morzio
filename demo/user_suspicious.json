@@ -14,226 +14,226 @@
             },
             "transactions": [
                 {
-                    "date_transacted": "2025-11-29",
-                    "date_posted": "2025-11-30",
-                    "amount": -1892.0,
+                    "date_transacted": "2026-04-09",
+                    "date_posted": "2026-04-10",
+                    "amount": 1892.0,
                     "description": "ONLINE CASINO WITHDRAWAL",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-27",
-                    "date_posted": "2025-11-28",
-                    "amount": -2450.0,
+                    "date_transacted": "2026-04-07",
+                    "date_posted": "2026-04-08",
+                    "amount": 2450.0,
                     "description": "CRYPTO EXCHANGE PURCHASE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-24",
-                    "date_posted": "2025-11-25",
-                    "amount": -1567.89,
+                    "date_transacted": "2026-04-04",
+                    "date_posted": "2026-04-05",
+                    "amount": 1567.89,
                     "description": "LUXURY GOODS STORE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-22",
-                    "date_posted": "2025-11-23",
-                    "amount": -3100.0,
+                    "date_transacted": "2026-04-02",
+                    "date_posted": "2026-04-03",
+                    "amount": 3100.0,
                     "description": "SPORTS BETTING DEPOSIT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-20",
-                    "date_posted": "2025-11-21",
-                    "amount": 150.0,
+                    "date_transacted": "2026-03-31",
+                    "date_posted": "2026-04-01",
+                    "amount": -150.0,
                     "description": "VENMO TRANSFER FROM FRIEND",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-18",
-                    "date_posted": "2025-11-19",
-                    "amount": -945.0,
+                    "date_transacted": "2026-03-29",
+                    "date_posted": "2026-03-30",
+                    "amount": 945.0,
                     "description": "PAYDAY LOAN PAYMENT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-15",
-                    "date_posted": "2025-11-16",
-                    "amount": -1789.99,
+                    "date_transacted": "2026-03-26",
+                    "date_posted": "2026-03-27",
+                    "amount": 1789.99,
                     "description": "ELECTRONICS STORE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-12",
-                    "date_posted": "2025-11-13",
-                    "amount": -2500.0,
+                    "date_transacted": "2026-03-23",
+                    "date_posted": "2026-03-24",
+                    "amount": 2500.0,
                     "description": "ONLINE GAMBLING SITE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-10",
-                    "date_posted": "2025-11-11",
-                    "amount": 100.0,
+                    "date_transacted": "2026-03-21",
+                    "date_posted": "2026-03-22",
+                    "amount": -100.0,
                     "description": "CASH DEPOSIT ATM",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-08",
-                    "date_posted": "2025-11-09",
-                    "amount": -734.56,
+                    "date_transacted": "2026-03-19",
+                    "date_posted": "2026-03-20",
+                    "amount": 734.56,
                     "description": "CASH ADVANCE FEE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-05",
-                    "date_posted": "2025-11-06",
-                    "amount": -1678.0,
+                    "date_transacted": "2026-03-16",
+                    "date_posted": "2026-03-17",
+                    "amount": 1678.0,
                     "description": "CRYPTO TRADING PLATFORM",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-11-02",
-                    "date_posted": "2025-11-03",
-                    "amount": -1950.0,
+                    "date_transacted": "2026-03-13",
+                    "date_posted": "2026-03-14",
+                    "amount": 1950.0,
                     "description": "CASINO ROYAL ONLINE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-30",
-                    "date_posted": "2025-10-31",
-                    "amount": -2800.0,
+                    "date_transacted": "2026-03-10",
+                    "date_posted": "2026-03-11",
+                    "amount": 2800.0,
                     "description": "HIGH-END FASHION OUTLET",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-27",
-                    "date_posted": "2025-10-28",
-                    "amount": 120.0,
+                    "date_transacted": "2026-03-07",
+                    "date_posted": "2026-03-08",
+                    "amount": -120.0,
                     "description": "GIG WORK PAYMENT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-24",
-                    "date_posted": "2025-10-25",
-                    "amount": -1445.0,
+                    "date_transacted": "2026-03-04",
+                    "date_posted": "2026-03-05",
+                    "amount": 1445.0,
                     "description": "OVERDRAFT FEE CHARGE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-21",
-                    "date_posted": "2025-10-22",
-                    "amount": -2100.0,
+                    "date_transacted": "2026-03-01",
+                    "date_posted": "2026-03-02",
+                    "amount": 2100.0,
                     "description": "BETTING EXCHANGE DEPOSIT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-18",
-                    "date_posted": "2025-10-19",
-                    "amount": -1567.0,
+                    "date_transacted": "2026-02-26",
+                    "date_posted": "2026-02-27",
+                    "amount": 1567.0,
                     "description": "LUXURY WATCH STORE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-15",
-                    "date_posted": "2025-10-16",
-                    "amount": 80.0,
+                    "date_transacted": "2026-02-23",
+                    "date_posted": "2026-02-24",
+                    "amount": -80.0,
                     "description": "PAYPAL TRANSFER",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-12",
-                    "date_posted": "2025-10-13",
-                    "amount": -3300.0,
+                    "date_transacted": "2026-02-20",
+                    "date_posted": "2026-02-21",
+                    "amount": 3300.0,
                     "description": "CRYPTO FUTURES TRADING",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-09",
-                    "date_posted": "2025-10-10",
-                    "amount": -1890.0,
+                    "date_transacted": "2026-02-17",
+                    "date_posted": "2026-02-18",
+                    "amount": 1890.0,
                     "description": "ONLINE SLOTS WITHDRAWAL",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-06",
-                    "date_posted": "2025-10-07",
-                    "amount": -945.0,
+                    "date_transacted": "2026-02-14",
+                    "date_posted": "2026-02-15",
+                    "amount": 945.0,
                     "description": "PAYDAY LOAN INTEREST",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-10-03",
-                    "date_posted": "2025-10-04",
-                    "amount": 90.0,
+                    "date_transacted": "2026-02-11",
+                    "date_posted": "2026-02-12",
+                    "amount": -90.0,
                     "description": "FREELANCE PAYMENT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-30",
-                    "date_posted": "2025-10-01",
-                    "amount": -2650.0,
+                    "date_transacted": "2026-02-08",
+                    "date_posted": "2026-02-09",
+                    "amount": 2650.0,
                     "description": "SPORTSBOOK DEPOSIT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-27",
-                    "date_posted": "2025-09-28",
-                    "amount": -1780.0,
+                    "date_transacted": "2026-02-05",
+                    "date_posted": "2026-02-06",
+                    "amount": 1780.0,
                     "description": "DESIGNER HANDBAG PURCHASE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-24",
-                    "date_posted": "2025-09-25",
-                    "amount": 75.0,
+                    "date_transacted": "2026-02-02",
+                    "date_posted": "2026-02-03",
+                    "amount": -75.0,
                     "description": "VENMO RECEIVED",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-21",
-                    "date_posted": "2025-09-22",
-                    "amount": -2200.0,
+                    "date_transacted": "2026-01-30",
+                    "date_posted": "2026-01-31",
+                    "amount": 2200.0,
                     "description": "POKER SITE DEPOSIT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-18",
-                    "date_posted": "2025-09-19",
-                    "amount": -840.0,
+                    "date_transacted": "2026-01-27",
+                    "date_posted": "2026-01-28",
+                    "amount": 840.0,
                     "description": "LATE FEE CREDIT CARD",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-15",
-                    "date_posted": "2025-09-16",
-                    "amount": 60.0,
+                    "date_transacted": "2026-01-24",
+                    "date_posted": "2026-01-25",
+                    "amount": -60.0,
                     "description": "SIDE JOB PAYMENT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-12",
-                    "date_posted": "2025-09-13",
-                    "amount": -1920.0,
+                    "date_transacted": "2026-01-21",
+                    "date_posted": "2026-01-22",
+                    "amount": 1920.0,
                     "description": "NFT MARKETPLACE PURCHASE",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-09",
-                    "date_posted": "2025-09-10",
-                    "amount": -2450.0,
+                    "date_transacted": "2026-01-18",
+                    "date_posted": "2026-01-19",
+                    "amount": 2450.0,
                     "description": "GAMBLING PLATFORM WITHDRAWAL",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-06",
-                    "date_posted": "2025-09-07",
-                    "amount": 50.0,
+                    "date_transacted": "2026-01-15",
+                    "date_posted": "2026-01-16",
+                    "amount": -50.0,
                     "description": "RANDOM CASH DEPOSIT",
                     "currency": "USD"
                 },
                 {
-                    "date_transacted": "2025-09-03",
-                    "date_posted": "2025-09-04",
-                    "amount": -1650.0,
+                    "date_transacted": "2026-01-12",
+                    "date_posted": "2026-01-13",
+                    "amount": 1650.0,
                     "description": "ONLINE CASINO CHIPS",
                     "currency": "USD"
                 }
